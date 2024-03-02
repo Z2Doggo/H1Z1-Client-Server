@@ -7,14 +7,22 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <limits>
 
 #include <cstdint>
 #include <cstddef>
 #include <cstdlib>
 
+#define TRANSMUTE(t) *(t*)&
 #define ALIGN_POW2(x, align) (((x) + ((align)-1)) & ~(((x) - (x)) + (align)-1))
 #define DEFER_SCOPE(begin, end) for (uintptr_t _ = ((begin), 0); !_; ++_, (end))
 
+#define STREAM_REMAINING_DATA(stream)  (stream.buffer.data + stream.cursor)
+#define STREAM_REMAINING_SIZE(stream)  ((stream).buffer.size - (stream).cursor)
+#define STREAM_AT(stream) ((stream).buffer.memory + (stream).cursor)
+
+#define MIN(a,b)  (a < b ? a : b)
+#define MAX(a,b)  (a > b ? a : b)
 #define KB(n) ((n) * 1024)
 #define MB(n) (KB(n) * 1024)
 

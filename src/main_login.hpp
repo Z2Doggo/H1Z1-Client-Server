@@ -1,7 +1,9 @@
-#ifndef SESSION_HPP
-#define SESSION_HPP
+#ifndef MAIN_LOGIN_HPP
+#define MAIN_LOGIN_HPP
 
-#include "../app_memory.hpp"
+#include "win32_sockets.hpp"
+#include "misc.hpp"
+#include "binary.hpp"
 
 #define SESSION_MAP_OVERHEAD(value) (value * 4)
 #define SESSION_MAP_MAX_COLLISION 3
@@ -63,6 +65,12 @@ struct Session_State
 	uint64_t guid;
 };
 
+struct Session_Address_Bucket
+{
+	Session_Address key;
+	Session_Handle value;
+};
+
 enum Session_Slot_Kind
 {
 	Session_Slot_Kind_Invalid = 0,
@@ -81,12 +89,6 @@ struct Session_Slot
 	} session_content;
 };
 
-struct Session_Address_Bucket
-{
-	Session_Address key;
-	Session_Handle value;
-};
-
 struct Session_Pool
 {
 	uint32_t active_count;
@@ -95,6 +97,17 @@ struct Session_Pool
 	Session_Slot* slots;
 	uint32_t map_bucket_count;
 	Session_Address_Bucket* session_address_map;
+};
+
+struct App_State
+{
+	Socket_Api* api;
+	Socket_Sock socket;
+	Arena* arena_per_tick;
+	size_t rc4_key_decoded_len;
+	uint8_t rc4_key_decoded[256];
+	Session_Pool session_pool;
+	Stream fragment_accumulator;
 };
 
 void session_free_all_from_pool(Session_Pool* pool);
@@ -106,4 +119,6 @@ Session_Handle session_acquire(Session_Pool* pool, Session_Address address);
 Session_State* session_get_pointer_from_handle(Session_Pool* pool, Session_Handle handle);
 void session_release(Session_Pool* pool, Session_Handle handle);
 
-#endif // !SESSION_HPP
+#include "SOE/core_protocol.hpp"
+
+#endif // !MAIN_LOGIN_HPP

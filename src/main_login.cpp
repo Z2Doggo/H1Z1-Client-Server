@@ -1,19 +1,7 @@
 #define LOCAL_PORT 1115
 #define MAX_SESSIONS_COUNT 16
 
-#include "SOE/session.hpp"
-#include "SOE/core_protocol.hpp"
-
-struct App_State
-{
-	Socket_Api *api;
-	Socket_Sock socket;
-	Arena* arena_per_tick;
-	size_t rc4_key_decoded_len;
-	unsigned char rc4_key_decoded[256];
-	Session_Pool session_pool;
-	Stream fragment_accumulator;
-}; 
+#include "main_login.hpp"
 
 extern "C" __declspec(dllexport) APP_TICK(server_tick)
 {
@@ -36,7 +24,7 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 			},
 		};
 		app->socket = app->api->udp_create_and_bind(LOCAL_PORT);
-		printf("[Server] - Login server bound to socket 1115\n\n");
+		printf("[Server] - Login server bound to socket %d\n\n", LOCAL_PORT);
 	}
 
 	DEFER_SCOPE(0, arena_reset(app->arena_per_tick))
@@ -60,6 +48,7 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 			};
 
 			Session_Handle session_handle = session_get_handle_from_address(&app->session_pool, inc_session_addr);
+			Session_State session{};
 			if (!session_handle.id)
 			{
 				session_handle = session_acquire(&app->session_pool, inc_session_addr);
@@ -81,11 +70,24 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 			}
 
 			Buffer packet_buffer{
-				.size = (size_t)receive_result,
+				.size = receive_result,
 				.data = inc_buffer,
 			};
 
-			/* TODO: FINISH THE CORE_PROTOCOL THEN FINISH THE DLL ENTRY */
+			protocol_core_packet_route(packet_buffer, false, session_handle, app);
+			if (session.sequence_in > session.acked_in)
+			{
+				for (int32_t ack_iter = 0; ack_iter < (session.sequence_in - session.acked_in); ack_iter++)
+				{
+					session.acked_in++;
+					Core_Packet_Ack ack{
+						.sequence = (uint16_t)session.acked_in,
+					};
+					core_packet_send(&ack, Core_Packet_Kind_Ack, session_handle, app);
+				}
+			}
+
+			printf("----------------------------------------- Packet Tick End ------------------------------------------\n");
 		}
 	}
 }
