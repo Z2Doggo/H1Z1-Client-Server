@@ -48,11 +48,11 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 			};
 
 			Session_Handle session_handle = session_get_handle_from_address(&app->session_pool, inc_session_addr);
-			Session_State session{};
+			Session_State* session = (Session_State*)arena_suballoc(app->arena_per_tick, MB(1)); // idk but it works
 			if (!session_handle.id)
 			{
 				session_handle = session_acquire(&app->session_pool, inc_session_addr);
-				Session_State* session = session_get_pointer_from_handle(&app->session_pool, session_handle);
+				session = session_get_pointer_from_handle(&app->session_pool, session_handle);
 
 				session->args = {
 					.crc_seed = 0,
@@ -75,13 +75,13 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 			};
 
 			protocol_core_packet_route(packet_buffer, false, session_handle, app);
-			if (session.sequence_in > session.acked_in)
+			if (session->sequence_in > session->acked_in)
 			{
-				for (int32_t ack_iter = 0; ack_iter < (session.sequence_in - session.acked_in); ack_iter++)
+				for (int32_t ack_iter = 0; ack_iter < (session->sequence_in - session->acked_in); ack_iter++)
 				{
-					session.acked_in++;
+					session->acked_in++;
 					Core_Packet_Ack ack{
-						.sequence = (uint16_t)session.acked_in,
+						.sequence = (uint16_t)session->acked_in,
 					};
 					core_packet_send(&ack, Core_Packet_Kind_Ack, session_handle, app);
 				}
