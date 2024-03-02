@@ -38,17 +38,15 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 		{
 			printf("\n\n________________________________________ Packet Tick Begin _________________________________________\n");
 
-			Session_Address inc_session_addr
-			{
-				.part
-				{
+			Session_Address inc_session_addr{
+				.part{
 					.ip = from_ip,
 					.port = from_port,
 				},
 			};
 
 			Session_Handle session_handle = session_get_handle_from_address(&app->session_pool, inc_session_addr);
-			Session_State* session = (Session_State*)arena_suballoc(app->arena_per_tick, MB(1)); // idk but it works
+			Session_State* session = (Session_State*)arena_suballoc(app->arena_per_tick, KB(10)); // idk but it works
 			if (!session_handle.id)
 			{
 				session_handle = session_acquire(&app->session_pool, inc_session_addr);
@@ -57,7 +55,7 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 				session->args = {
 					.crc_seed = 0,
 					.crc_size = 0,
-					.compression = 0 ,
+					.compression = 0,
 					.udp_size = MAX_PACKET_SIZE,
 					.use_encryption = false,
 				};
@@ -74,7 +72,7 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 				.data = inc_buffer,
 			};
 
-			protocol_core_packet_route(packet_buffer, false, session_handle, app);
+			core_packet_route(packet_buffer, false, session_handle, app);
 			if (session->sequence_in > session->acked_in)
 			{
 				for (int32_t ack_iter = 0; ack_iter < (session->sequence_in - session->acked_in); ack_iter++)

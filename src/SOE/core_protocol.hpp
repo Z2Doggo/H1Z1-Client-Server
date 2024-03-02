@@ -94,11 +94,9 @@ SESSION_ESTABLISHED_CALLBACK(on_session_established);
 
 uint32_t core_read_chunk_size(Stream* data_stream);
 void core_input_data_process_chunks(Buffer data_buffer, Protocol_Args args, Session_Handle handle, App_State* app_state);
-Buffer core_input_data_accumulate(Core_Packet_Data data_packet, App_State* app_state);
-void core_input_data_intake(Core_Packet_Data data_packet, uint32_t is_fragment, Session_Handle session_handle, App_State* app_state);
 void core_packet_unpack(Stream* packet_stream, void* result_ptr, Core_Packet_Kind packet_kind, uint32_t is_sub_packet, Protocol_Args args);
 void core_packet_send(void* packet_ptr, Core_Packet_Kind packet_kind, Session_Handle session_handle, App_State* app_state);
-void protocol_core_data_send(Buffer data_buffer, uint32_t ignore_encryption, Session_Handle session_handle, App_State* app_state);
-void protocol_core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Handle session_handle, App_State* app_state);
+void core_data_send(Buffer data_buffer, uint32_t ignore_encryption, Session_Handle session_handle, App_State* app_state);
+void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Handle session_handle, App_State* app_state);
 
 #endif // !CORE_PROTOCOL_HPP

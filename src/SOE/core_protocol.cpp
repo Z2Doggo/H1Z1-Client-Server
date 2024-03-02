@@ -78,69 +78,6 @@ void core_input_data_process_chunks(Buffer data_buffer, Protocol_Args args, Sess
 	}
 }
 
-Buffer core_input_data_accumulate(Core_Packet_Data data_packet, App_State* app_state)
-{
-	Buffer result{};
-
-	Stream data_packet_stream =
-	{
-		.buffer =
-		{
-			.size = data_packet.data_size,
-			.data = data_packet.data,
-		},
-	};
-
-	static uint32_t target_size;
-	static uint32_t is_occupied;
-	if (!is_occupied)
-	{
-		is_occupied = true;
-		target_size = read_uint32_t_big(&data_packet_stream);
-	}
-	memcpy(STREAM_REMAINING_DATA(app_state->fragment_accumulator), STREAM_REMAINING_DATA(data_packet_stream), STREAM_REMAINING_SIZE(data_packet_stream));
-	app_state->fragment_accumulator.cursor += STREAM_REMAINING_SIZE(data_packet_stream);
-
-	if (app_state->fragment_accumulator.cursor == target_size)
-	{
-		result.data = app_state->fragment_accumulator.buffer.data;
-		result.size = app_state->fragment_accumulator.cursor;
-		app_state->fragment_accumulator.cursor = 0;
-		is_occupied = false;
-		target_size = 0;
-	}
-
-	return result;
-}
-
-void core_input_data_intake(Core_Packet_Data data_packet, uint32_t is_fragment, Session_Handle session_handle, App_State* app_state)
-{
-	Session_State* session = session_get_pointer_from_handle(&app_state->session_pool, session_handle);
-	if (data_packet.sequence != session->sequence_in + 1)
-	{
-		printf("Sequence out of order. expected %d, got %u\n", session->sequence_in + 1, data_packet.sequence);
-		session->sequence_in++;
-	}
-
-	if (is_fragment)
-	{
-		Buffer completed_data_buffer = core_input_data_accumulate(data_packet, app_state);
-		if (completed_data_buffer.size)
-		{
-			core_input_data_process_chunks(completed_data_buffer, session->args, session_handle, app_state);
-		}
-	}
-	else
-	{
-		Buffer data_buffer =
-		{
-			.size = data_packet.data_size,
-			.data = data_packet.data,
-		};
-		core_input_data_process_chunks(data_buffer, session->args, session_handle, app_state);
-	}
-}
-
 void core_packet_unpack(Stream* packet_stream, void* result_ptr, Core_Packet_Kind packet_kind, uint32_t is_sub_packet, Protocol_Args args)
 {
 	switch (packet_kind)
@@ -236,7 +173,6 @@ void core_packet_send(void* packet_ptr, Core_Packet_Kind packet_kind, Session_Ha
 		write_uint16_t_big(&output_stream, session_reply->compression);
 		write_uint32_t_big(&output_stream, session_reply->udp_size);
 	} break;
-
 	case Core_Packet_Kind_Data:
 	case Core_Packet_Kind_DataFragment:
 	{
@@ -251,7 +187,6 @@ void core_packet_send(void* packet_ptr, Core_Packet_Kind packet_kind, Session_Ha
 		memcpy((uint8_t*)output_stream.buffer.data + output_stream.cursor, data_packet->data, data_packet->data_size);
 		output_stream.cursor += data_packet->data_size;
 	} break;
-
 	case Core_Packet_Kind_Ack:
 	{
 		Core_Packet_Ack* ack_packet = (Core_Packet_Ack*)packet_ptr;
@@ -261,7 +196,6 @@ void core_packet_send(void* packet_ptr, Core_Packet_Kind packet_kind, Session_Ha
 
 		printf("Sending ack %d\n", ack_packet->sequence);
 	} break;
-
 	default:
 	{
 		printf("sending not handled");
@@ -286,7 +220,7 @@ void core_packet_send(void* packet_ptr, Core_Packet_Kind packet_kind, Session_Ha
 		session->addr.part.port);
 }
 
-void protocol_core_data_send(Buffer data_buffer, uint32_t ignore_encryption, Session_Handle session_handle, App_State* app_state)
+void core_data_send(Buffer data_buffer, uint32_t ignore_encryption, Session_Handle session_handle, App_State* app_state)
 {
 	Session_State* session = session_get_pointer_from_handle(&app_state->session_pool, session_handle);
 
@@ -339,7 +273,7 @@ void protocol_core_data_send(Buffer data_buffer, uint32_t ignore_encryption, Ses
 	}
 }
 
-void protocol_core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Handle session_handle, App_State* app_state)
+void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Handle session_handle, App_State* app_state)
 {
 	Stream packet_stream =
 	{
@@ -464,7 +398,6 @@ void protocol_core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Se
 		}
 
 	} break;
-
 	case Core_Packet_Kind_MultiPacket:
 	{
 		if (session->args.compression)
@@ -482,11 +415,10 @@ void protocol_core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Se
 				.data = STREAM_REMAINING_DATA(packet_stream),
 			};
 
-			protocol_core_packet_route(chunk_buffer, TRUE, session_handle, app_state);
+			core_packet_route(chunk_buffer, TRUE, session_handle, app_state);
 			packet_stream.cursor += chunk_size;
 		}
 	} break;
-
 	default:
 	{
 		printf("Unhandled packet\n");
