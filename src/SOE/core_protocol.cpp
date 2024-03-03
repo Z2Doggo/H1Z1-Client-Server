@@ -368,7 +368,7 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 			static uint32_t is_occupied;
 			if (!is_occupied)
 			{
-				is_occupied = TRUE;
+				is_occupied = true;
 				target_size = read_uint32_t_big(&data_stream);
 			}
 			memcpy(STREAM_REMAINING_DATA(app_state->fragment_accumulator), STREAM_REMAINING_DATA(data_stream), STREAM_REMAINING_SIZE(data_stream));
@@ -379,7 +379,7 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 				completed_data_buffer.data = app_state->fragment_accumulator.buffer.data;
 				completed_data_buffer.size = app_state->fragment_accumulator.cursor;
 				app_state->fragment_accumulator.cursor = 0;
-				is_occupied = FALSE;
+				is_occupied = false;
 				target_size = 0;
 			}
 
@@ -415,7 +415,7 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 				.data = STREAM_REMAINING_DATA(packet_stream),
 			};
 
-			core_packet_route(chunk_buffer, TRUE, session_handle, app_state);
+			core_packet_route(chunk_buffer, true, session_handle, app_state);
 			packet_stream.cursor += chunk_size;
 		}
 	} break;

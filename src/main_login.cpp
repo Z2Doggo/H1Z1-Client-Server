@@ -1,6 +1,3 @@
-#define LOCAL_PORT 1115
-#define MAX_SESSIONS_COUNT 16
-
 #include "main_login.hpp"
 
 extern "C" __declspec(dllexport) APP_TICK(server_tick)

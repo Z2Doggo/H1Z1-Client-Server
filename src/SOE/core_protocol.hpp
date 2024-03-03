@@ -35,21 +35,21 @@ enum Core_Packet_Kind
 #undef CORE_PACKET_KIND
 };
 
-static Core_Packet_Kind global_core_packet_kinds[Core_Packet_Kind__End + 1] =
+static Core_Packet_Kind global_core_packet_kinds[Core_Packet_Kind__End + 1]
 {
 #define CORE_PACKET_KIND(kind, id, str) kind
 		CORE_PACKET_KINDS
 #undef CORE_PACKET_KIND
 };
 
-static uint16_t global_core_packet_ids[Core_Packet_Kind__End + 1] =
+static uint16_t global_core_packet_ids[Core_Packet_Kind__End + 1]
 {
 #define CORE_PACKET_KIND(kind, id, str) id
 		CORE_PACKET_KINDS
 #undef CORE_PACKET_KIND
 };
 
-static const char* global_core_packet_names[Core_Packet_Kind__End + 1] =
+static const char* global_core_packet_names[Core_Packet_Kind__End + 1]
 {
 #define CORE_PACKET_KIND(kind, id, str) str
 		CORE_PACKET_KINDS

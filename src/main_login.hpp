@@ -5,6 +5,9 @@
 #include "misc.hpp"
 #include "binary.hpp"
 
+#define LOCAL_PORT 1115
+#define MAX_SESSIONS_COUNT 16
+
 #define SESSION_MAP_OVERHEAD(value) (value * 4)
 #define SESSION_MAP_MAX_COLLISION 3
 

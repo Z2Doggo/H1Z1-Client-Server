@@ -12,13 +12,13 @@ endif()
 project ("H1Z1-Client-Server")
 
 # Add source to this project's shared executable.
-add_library(H1_Login_Module SHARED "src/main_login.cpp" "src/app_memory.hpp" "src/win32_sockets.hpp" "src/misc.cpp" "src/win32_sockets.cpp" "src/SOE/session.cpp" "src/SOE/core_protocol.hpp" "src/SOE/core_protocol.cpp" "src/binary.hpp" "src/binary.cpp")
+add_library(H1_Login_Module SHARED "src/main_login.cpp" "src/app_memory.hpp" "src/win32_sockets.hpp" "src/misc.cpp" "src/win32_sockets.cpp" "src/SOE/session.cpp" "src/SOE/core_protocol.hpp" "src/SOE/core_protocol.cpp" "src/binary.hpp" "src/binary.cpp" "src/Packets/LoginUdp_11/login_packets.hpp" "src/Packets/LoginUdp_11/login_packets.cpp")
 
 # Link against the necessary libraries
 target_link_libraries(H1_Login_Module PRIVATE ws2_32 PRIVATE winmm.lib)
 
 # Add source to this project's executable.
-add_executable (H1Z1-Client-Server "src/win32_login.cpp" "src/app_memory.hpp" "src/win32_sockets.hpp" "src/misc.cpp" "src/win32_sockets.cpp" "src/SOE/session.cpp" "src/SOE/core_protocol.hpp" "src/SOE/core_protocol.cpp" "src/binary.hpp" "src/binary.cpp")
+add_executable (H1Z1-Client-Server "src/win32_login.cpp" "src/app_memory.hpp" "src/win32_sockets.hpp" "src/misc.cpp" "src/win32_sockets.cpp" "src/SOE/session.cpp" "src/SOE/core_protocol.hpp" "src/SOE/core_protocol.cpp" "src/binary.hpp" "src/binary.cpp" "src/Packets/LoginUdp_11/login_packets.hpp" "src/Packets/LoginUdp_11/login_packets.cpp")
 
 # Link against the necessary libraries
 target_link_libraries(H1Z1-Client-Server PRIVATE ws2_32 PRIVATE winmm.lib PUBLIC H1_Login_Module)
