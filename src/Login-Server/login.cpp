@@ -18,7 +18,7 @@ void login_packet_raw_data_send(const char* file_path, size_t reserved_size, Are
 	uint8_t* total_buffer = (uint8_t*)arena_push_size(arena, total_reserved_size);
 
 	uint8_t* login_part_buffer = (uint8_t*)total_reserved_size + LOGIN_PACKET_RESERVED_SIZE;
-	size_t login_part_size = app->api->buffer_load_from_file(file_path, (uint8_t*)login_part_buffer, (uint32_t)reserved_size - LOGIN_PACKET_RESERVED_SIZE);
+	size_t login_part_size = app->api->buffer_load_from_file(file_path, (uint8_t*)login_part_buffer, (uint32_t)(reserved_size - LOGIN_PACKET_RESERVED_SIZE));
 
 	size_t final_size = login_part_size + LOGIN_PACKET_RESERVED_SIZE;
 	Buffer buffer_to_send{
