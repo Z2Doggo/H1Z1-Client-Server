@@ -36,13 +36,14 @@ enum Login_Packet_Kind
 #undef LOGIN_PACKET_KIND
 };
 
-static const char* login_packet_names[Login_Packet_Kind__End + 1] =
+static const char* login_packet_names[Login_Packet_Kind__End + 1]
 {
 #define LOGIN_PACKET_KIND(kind, string) string
 	LOGIN_PACKET_KINDS
 #undef LOGIN_PACKET_KIND
 };
 
+/*
 std::unordered_map<Login_Packet_Kind, uint32_t> login_registered_ids{
 {Login_Packet_Kind_LoginRequest, 0x1},
 {Login_Packet_Kind_LoginReply, 0x2},
@@ -64,6 +65,7 @@ std::unordered_map<Login_Packet_Kind, uint32_t> login_registered_ids{
 {Login_Packet_Kind_ServerListReply, 0xe},
 {Login_Packet_Kind_ServerUpdate, 0xf},
 };
+*/
 
 struct Login_Packet_LoginRequest
 {
