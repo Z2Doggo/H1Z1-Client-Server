@@ -20,7 +20,7 @@ void arena_push_alignment(Arena* arena, uintptr_t alignment)
 	arena->cursor = total_size;
 }
 
-void* arena_push_size(Arena* arena, size_t size)
+void* arena_push_size(Arena* arena, uintptr_t size)
 {
 	uintptr_t aligned_ptr = ALIGN_POW2((uintptr_t)arena->memory + arena->cursor, arena->alignment);
 	uintptr_t total_size = (aligned_ptr + size) - (uintptr_t)arena->memory;
@@ -182,4 +182,12 @@ void rc4_transform(RC4* state, uint8_t* data, size_t data_size)
 
 		data[k] ^= state->keystream[(state->keystream[state->index_0] + state->keystream[state->index_1]) % 256];
 	}
+}
+
+Buffer buffer_from_array(size_t size, void* data)
+{
+	Buffer result{};
+	result.size = size;
+	result.data = (uint8_t*)data;
+	return result;
 }

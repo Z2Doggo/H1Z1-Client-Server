@@ -22,7 +22,7 @@
 
 #define STREAM_REMAINING_DATA(stream)  (stream.buffer.data + stream.cursor)
 #define STREAM_REMAINING_SIZE(stream)  ((stream).buffer.size - (stream).cursor)
-#define STREAM_AT(stream) ((stream).buffer.memory + (stream).cursor)
+#define STREAM_AT(stream) ((stream).buffer.data + (stream).cursor)
 
 #define MIN(a,b)  (a < b ? a : b)
 #define MAX(a,b)  (a > b ? a : b)
@@ -82,5 +82,9 @@ struct RC4
 
 void rc4_init(RC4* state, uint8_t* key, size_t key_size);
 void rc4_transform(RC4* state, uint8_t* data, size_t data_size);
+
+Buffer buffer_from_array(size_t size, void* data);
+#define BUNDLE_STRING(s) { .size = sizeof(s) - 1, .data = (uint8_t *)s }
+#define BUNDLE_STRING_CONST(s) {sizeof(s) - 1, (uint8_t*)(s)}
 
 #endif // !MISC_HPP

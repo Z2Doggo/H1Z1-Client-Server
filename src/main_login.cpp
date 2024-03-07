@@ -1,4 +1,4 @@
-#include "main_login.hpp"
+#include "SOE/core_protocol.hpp"
 
 extern "C" __declspec(dllexport) APP_TICK(server_tick)
 {
@@ -24,65 +24,77 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 		printf("[Server] - Login server bound to socket %d\n\n", LOCAL_PORT);
 	}
 
-	DEFER_SCOPE(0, arena_reset(app->arena_per_tick))
-	{
-		uint8_t inc_buffer[MAX_PACKET_SIZE]{};
-		uint32_t from_ip;
-		uint16_t from_port;
+    DEFER_SCOPE(0, arena_reset(app->arena_per_tick)) {
+        uint8_t incoming_buffer[MAX_PACKET_SIZE]{};
+        uint32_t from_ip;
+        uint16_t from_port;
+        int32_t receive_result = app->api->receive_from(app->socket, incoming_buffer, MAX_PACKET_SIZE, &from_ip,  &from_port);
 
-		uint32_t receive_result = app->api->receive_from(app->socket, inc_buffer, MAX_PACKET_SIZE, &from_ip, &from_port);
-		if (receive_result)
-		{
-			printf("\n\n________________________________________ Packet Tick Begin _________________________________________\n");
+        if (receive_result) 
+        {
+            printf("\n\n________________________________________ Packet Tick Begin _________________________________________\n");
 
-			Session_Address inc_session_addr{
-				.part{
-					.ip = from_ip,
-					.port = from_port,
-				},
-			};
+            Session_Address incoming_session_address = {
+                .part{
+                    .ip = from_ip,
+                    .port = from_port,
+                },
+            };
 
-			Session_Handle session_handle = session_get_handle_from_address(&app->session_pool, inc_session_addr);
-			Session_State* session = (Session_State*)arena_suballoc(app->arena_per_tick, KB(10)); // idk but it works
-			if (!session_handle.id)
-			{
-				session_handle = session_acquire(&app->session_pool, inc_session_addr);
-				session = session_get_pointer_from_handle(&app->session_pool, session_handle);
+            Session_State* session = 0;
+            Session_Handle session_handle = session_get_handle_from_address(&app->session_pool, incoming_session_address);
+            if (!session_handle.id) 
+            {
+                session_handle = session_acquire(&app->session_pool, incoming_session_address);
+                session = session_get_pointer_from_handle(&app->session_pool, session_handle);
 
-				session->args = {
-					.crc_seed = 0,
-					.crc_size = 0,
-					.compression = 0,
-					.udp_size = MAX_PACKET_SIZE,
-					.use_encryption = false,
-				};
-				session->acked_in = -1;
-				session->sequence_in = -1;
-				session->sequence_out = -1;
+                session->args = {
+                    .crc_seed = 0,
+                    .crc_size = 0,
+                    .compression = 0,
+                    .udp_size = MAX_PACKET_SIZE,
+                    .use_encryption = 0,
+                };
+                session->acked_in = -1;
+                session->sequence_in = -1;
+                session->sequence_out = -1;
+                rc4_init(&session->rc4_in, app->rc4_key_decoded,  app->rc4_key_decoded_len);
+                rc4_init(&session->rc4_out,  app->rc4_key_decoded, app->rc4_key_decoded_len);
+            }
 
-				rc4_init(&session->rc4_in, app->rc4_key_decoded, app->rc4_key_decoded_len);
-				rc4_init(&session->rc4_out, app->rc4_key_decoded, app->rc4_key_decoded_len);
-			}
+            if (!session) 
+            {
+                session = session_get_pointer_from_handle(&app->session_pool, session_handle);
+            }
 
-			Buffer packet_buffer{
-				.size = receive_result,
-				.data = inc_buffer,
-			};
+            Buffer packet_buffer = { 
+                .size = (uintptr_t)receive_result,               
+                .data = incoming_buffer 
+            };
 
-			core_packet_route(packet_buffer, false, session_handle, app);
-			if (session->sequence_in > session->acked_in)
-			{
-				for (int32_t ack_iter = 0; ack_iter < (session->sequence_in - session->acked_in); ack_iter++)
-				{
-					session->acked_in++;
-					Core_Packet_Ack ack{
-						.sequence = (uint16_t)session->acked_in,
-					};
-					core_packet_send(&ack, Core_Packet_Kind_Ack, session_handle, app);
-				}
-			}
+            if (session->kind == Session_Kind_Ping_Responder) 
+            {
+                printf("Handle ping responder");
+            }
+            else 
+            {
+                core_packet_route(packet_buffer, FALSE, session_handle, app);
+            }
 
-			printf("----------------------------------------- Packet Tick End ------------------------------------------\n");
-		}
-	}
+            if (session->sequence_in > session->acked_in) 
+            {
+                for (int32_t ack_iter = 0; ack_iter < (session->sequence_in - session->acked_in);  ack_iter++) 
+                {
+                    session->acked_in++;
+                    Core_Packet_Ack ack 
+                    {
+                        .sequence = (uint16_t)session->acked_in,
+                    };
+                    core_packet_send(&ack, Core_Packet_Kind_Ack, session_handle, app);
+                }
+            }
+
+            printf("----------------------------------------- Packet Tick End ------------------------------------------\n");
+        }
+    }
 }

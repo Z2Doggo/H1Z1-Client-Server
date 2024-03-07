@@ -10,11 +10,11 @@ uint32_t socket_win_folder_create(const char* folder_path)
 		if (last_error != 183L)
 		{
 			printf("[!] CreateDirectory error on \"%s\" - Error: %lu\n", folder_path, last_error);
-			return false;
+			return 0;
 		}
 	}
 
-	return true;
+	return 1;
 }
 
 uint32_t socket_win_buffer_write_to_file(const char* file_path, void* buffer, uint32_t size)
@@ -137,10 +137,10 @@ int32_t socket_win_wsa_initialize(void)
 	if (error)
 	{
 		printf("[!] WSAStartup failed - Error: %d\n", error);
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
 
 Socket_Sock socket_close(void)
@@ -156,7 +156,7 @@ Socket_Sock socket_close(void)
 
 Socket_Sock socket_win_udp_create_and_bind(uint16_t port)
 {
-	int is_wsa_initialized = false;
+	int is_wsa_initialized = 0;
 	if (!is_wsa_initialized)
 	{
 		is_wsa_initialized = socket_win_wsa_initialize();
@@ -170,7 +170,7 @@ Socket_Sock socket_win_udp_create_and_bind(uint16_t port)
 		return result;
 	}
 
-	u_long cmd_arg = true;
+	u_long cmd_arg = 1;
 	if (ioctlsocket(result.socket, FIONBIO, &cmd_arg) == SOCKET_ERROR)
 	{
 		printf("[!] ioctlsocket() failed: %d\n", WSAGetLastError());
@@ -189,7 +189,7 @@ Socket_Sock socket_win_udp_create_and_bind(uint16_t port)
 		socket_close();
 	}
 
-	result.is_valid = true;
+	result.is_valid = 1;
 	return result;
 }
 
@@ -232,8 +232,8 @@ uint32_t socket_win_send_to(Socket_Sock sock, void* buffer, uint32_t size, uint3
 	to_address.sin_addr.s_addr = htonl(to_ip);
 	to_address.sin_port = htons(to_port);
 
-	int result = sendto(sock.socket,
-		static_cast<char*>(buffer),
+	int result = sendto((SOCKET)sock.socket,
+		(const char*)buffer,
 		size,
 		0,
 		(SOCKADDR*)&to_address,

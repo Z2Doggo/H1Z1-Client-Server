@@ -1,71 +1,64 @@
 #ifndef LOGIN_PACKETS_HPP
 #define LOGIN_PACKETS_HPP
 
-#include "../../SOE/core_protocol.hpp"
+#include "../../app_memory.hpp"
+
+#include "../../Packets/LoginUdp_11/login_packets.hpp"
+#include "../../Login_Server/login.hpp"
 
 #define LOGIN_PACKET_ID_SIZE        1
 #define LOGIN_PACKET_RESERVED_SIZE  (CORE_DATA_FRAGMENT_EXTRA_SIZE)
 
-#define LOGIN_PACKET_KINDS \
-LOGIN_PACKET_KIND(Login_Packet_Kind_Unhandled, "Unhandled"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_LoginRequest, "LoginRequest"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_LoginReply, "LoginReply"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_Logout, "Logout"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_ForceDisconnect, "ForceDisconnect"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterCreateRequest, "CharacterCreateRequest"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterCreateReply, "CharacterCreateReply"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterLoginRequest, "CharacterLoginRequest"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterLoginReply, "CharacterLoginReply"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterDeleteRequest, "CharacterDeleteRequest"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_TunnelAppPacketClientToServer, "TunnelAppPacketClientToServer"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_TunnelAppPacketServerToClient, "TunnelAppPacketServerToClient"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterTransferRequest, "CharacterTransferRequest"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterTransferReply, "CharacterTransferReply"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterDeleteReply, "CharacterDeleteReply"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterSelectInfoRequest, "CharacterSelectInfoRequest"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterSelectInfoReply, "CharacterSelectInfoReply"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_ServerListRequest, "ServerListRequest"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_ServerListReply, "ServerListReply"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind_ServerUpdate, "ServerUpdate"), \
-LOGIN_PACKET_KIND(Login_Packet_Kind__End, "")
+#define LOGIN_PACKET_KINDS                                                                                       \
+  LOGIN_PACKET_KIND(Login_Packet_Kind_Unhandled, 0x00, "Unhandled"),                                             \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_LoginRequest, 0x01, "LoginRequest"),                                   \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_LoginReply, 0x02, "LoginReply"),                                       \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_Logout, 0x03, "Logout"),                                               \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_ForceDisconnect, 0x04, "ForceDisconnect"),                             \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterCreateRequest, 0x05, "CharacterCreateRequest"),               \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterCreateReply, 0x06, "CharacterCreateReply"),                   \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterLoginRequest, 0x07, "CharacterLoginRequest"),                 \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterLoginReply, 0x08, "CharacterLoginReply"),                     \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterDeleteRequest, 0x09, "CharacterDeleteRequest"),               \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_TunnelAppPacketClientToServer, 0x10, "TunnelAppPacketClientToServer"), \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_TunnelAppPacketServerToClient, 0x11, "TunnelAppPacketServerToClient"), \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterTransferRequest, 0x12, "CharacterTransferRequest"),           \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterTransferReply, 0x13, "CharacterTransferReply"),               \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterDeleteReply, 0x0a, "CharacterDeleteReply"),                   \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterSelectInfoRequest, 0x0b, "CharacterSelectInfoRequest"),       \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_CharacterSelectInfoReply, 0x0c, "CharacterSelectInfoReply"),           \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_ServerListRequest, 0x0d, "ServerListRequest"),                         \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_ServerListReply, 0x0e, "ServerListReply"),                             \
+      LOGIN_PACKET_KIND(Login_Packet_Kind_ServerUpdate, 0x0f, "ServerUpdate"),                                   \
+      LOGIN_PACKET_KIND(Login_Packet_Kind__End, 0x14, "")
 
 enum Login_Packet_Kind
 {
-#define LOGIN_PACKET_KIND(kind, string) kind
+#define LOGIN_PACKET_KIND(kind, id, str) kind
 	LOGIN_PACKET_KINDS
+#undef LOGIN_PACKET_KIND
+};
+
+static Login_Packet_Kind login_packet_kinds[Login_Packet_Kind__End + 1]
+{
+#define LOGIN_PACKET_KIND(kind, id, str) kind
+		LOGIN_PACKET_KINDS
+#undef LOGIN_PACKET_KIND
+};
+
+static uint16_t login_packet_ids[Login_Packet_Kind__End + 1]
+{
+#define LOGIN_PACKET_KIND(kind, id, str) id
+		LOGIN_PACKET_KINDS
 #undef LOGIN_PACKET_KIND
 };
 
 static const char* login_packet_names[Login_Packet_Kind__End + 1]
 {
-#define LOGIN_PACKET_KIND(kind, string) string
-	LOGIN_PACKET_KINDS
+#define LOGIN_PACKET_KIND(kind, id, str) str
+		LOGIN_PACKET_KINDS
 #undef LOGIN_PACKET_KIND
 };
-
-/*
-std::unordered_map<Login_Packet_Kind, uint32_t> login_registered_ids{
-{Login_Packet_Kind_LoginRequest, 0x1},
-{Login_Packet_Kind_LoginReply, 0x2},
-{Login_Packet_Kind_Logout, 0x3},
-{Login_Packet_Kind_ForceDisconnect, 0x4},
-{Login_Packet_Kind_CharacterCreateRequest, 0x5},
-{Login_Packet_Kind_CharacterCreateReply, 0x6},
-{Login_Packet_Kind_CharacterLoginRequest, 0x7},
-{Login_Packet_Kind_CharacterLoginReply, 0x8},
-{Login_Packet_Kind_CharacterDeleteRequest, 0x9},
-{Login_Packet_Kind_TunnelAppPacketClientToServer, 0x10},
-{Login_Packet_Kind_TunnelAppPacketServerToClient, 0x11},
-{Login_Packet_Kind_CharacterTransferRequest, 0x12},
-{Login_Packet_Kind_CharacterTransferReply, 0x13},
-{Login_Packet_Kind_CharacterDeleteReply, 0xa},
-{Login_Packet_Kind_CharacterSelectInfoRequest, 0xb},
-{Login_Packet_Kind_CharacterSelectInfoReply, 0xc},
-{Login_Packet_Kind_ServerListRequest, 0xd},
-{Login_Packet_Kind_ServerListReply, 0xe},
-{Login_Packet_Kind_ServerUpdate, 0xf},
-};
-*/
 
 struct Login_Packet_LoginRequest
 {
@@ -79,18 +72,18 @@ struct Login_Packet_LoginRequest
 
 struct Login_Packet_LoginReply
 {
-	bool is_logged_in;
+	uint8_t is_logged_in;
 	uint32_t status;
 	uint32_t result_code;
-	bool is_member;
-	bool is_internal;
+	uint8_t is_member;
+	uint8_t is_internal;
 	Buffer namespace_name;
 	uint32_t account_features_count;
 	struct account_features_s
 	{
 		uint32_t key;
 		uint32_t id;
-		bool active;
+		uint8_t active;
 		uint32_t remaining_count;
 		Buffer raw_data;
 	}*account_features;
@@ -176,8 +169,8 @@ struct Login_Packet_TunnelAppPacketClientToServer
 	uint32_t data_client_size;
 	struct data_client_s
 	{
-		bool tunnel_op_code;
-		bool sub_op_code;
+		uint8_t tunnel_op_code;
+		uint8_t sub_op_code;
 		Buffer character_name;
 	} data_client;
 };
@@ -189,8 +182,8 @@ struct Login_Packet_TunnelAppPacketServerToClient
 	uint32_t data_server_size;
 	struct data_server_s
 	{
-		bool tunnel_op_code;
-		bool sub_op_code;
+		uint8_t tunnel_op_code;
+		uint8_t sub_op_code;
 		Buffer character_name;
 		Buffer character_name2;
 		uint32_t status;
@@ -207,7 +200,7 @@ struct Login_Packet_CharacterDeleteReply
 struct Login_Packet_CharacterSelectInfoReply
 {
 	uint32_t character_status;
-	bool can_bypass_server_lock;
+	uint8_t can_bypass_server_lock;
 	uint32_t characters_count;
 	struct characters_s
 	{
@@ -307,8 +300,8 @@ struct Login_Packet_CharacterSelectInfoReply
 					uint32_t grinder_reward_set_id;
 					uint32_t build_bar_group_id;
 					Buffer unk_string_1;
-					bool unk_bool_1;
-					bool is_armor;
+					uint8_t unk_bool_1;
+					uint8_t is_armor;
 					uint32_t unk_dword_7;
 					uint32_t param1;
 					uint32_t param2;
@@ -352,7 +345,7 @@ struct Login_Packet_ServerListReply
 	{
 		uint32_t id;
 		uint32_t state;
-		bool is_locked;
+		uint8_t is_locked;
 		Buffer name;
 		uint32_t name_id;
 		Buffer description;
@@ -362,10 +355,11 @@ struct Login_Packet_ServerListReply
 		uint32_t population_level;
 		Buffer population_data;
 		Buffer access_expression;
-		bool is_access_allowed;
+		uint8_t is_access_allowed;
 	}*servers;
 };
 
 Buffer pack_login_packet(Arena* arena, void* packet_ptr, Login_Packet_Kind packet_kind);
+uintptr_t unpack_login_packet(Arena* arena, Stream* stream, void* result_ptr, Login_Packet_Kind packet_kind);
 
 #endif // !LOGIN_PACKETS_HPP

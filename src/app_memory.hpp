@@ -13,7 +13,7 @@ struct App_Memory
 	uint64_t tick_count;
 };
 
-#define APP_TICK(name) void name(struct App_Memory *memory)
+#define APP_TICK(name) void name(App_Memory *memory)
 typedef APP_TICK(app_tick_t);
 
 #endif // !APP_MEMORY_HPP

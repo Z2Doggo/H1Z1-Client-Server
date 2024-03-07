@@ -1,19 +1,21 @@
 #include "core_protocol.hpp"
 
-static int global_core_packet_begin = Core_Packet_Kind_Invalid + 1;
-static int global_core_packet_count = Core_Packet_Kind__End;
+static int32_t global_core_packet_begin = Core_Packet_Kind_Invalid + 1;
+static int32_t global_core_packet_count = Core_Packet_Kind__End;
 
-CORE_DATA_INPUT_CALLBACK(core_on_data_input)
+void packet_data_callback(Buffer buffer, Session_Handle handle, App_State* app)
 {
-	(void)data_buffer;
-	(void)session_handle;
-	(void)app_state;
+#ifdef LOGIN_HPP
+	login_packet_route(buffer, handle, app);
+#elif ZONE_HPP
+	// zone_packet_route(buffer, handle, app);
+#endif
 }
 
-SESSION_ESTABLISHED_CALLBACK(on_session_established)
+void session_callback(Session_Handle handle, App_State* app)
 {
-	Session_State* session = session_get_pointer_from_handle(&app_state->session_pool, session_handle);
-	session->args.use_encryption = true;
+	Session_State* session = session_get_pointer_from_handle(&app->session_pool, handle);
+	session->args.use_encryption = 1;
 }
 
 uint32_t core_read_chunk_size(Stream* data_stream)
@@ -63,7 +65,7 @@ void core_input_data_process_chunks(Buffer data_buffer, Protocol_Args args, Sess
 				rc4_transform(&session->rc4_in, chunk_buffer.data, chunk_buffer.size);
 			}
 
-			core_on_data_input(chunk_buffer, handle, app_state);
+			packet_data_callback(chunk_buffer, handle, app_state);
 			data_stream.cursor += chunk_length;
 		}
 	}
@@ -74,8 +76,43 @@ void core_input_data_process_chunks(Buffer data_buffer, Protocol_Args args, Sess
 			rc4_transform(&session->rc4_in, data_buffer.data, data_buffer.size);
 		}
 
-		core_on_data_input(data_buffer, handle, app_state);
+		packet_data_callback(data_buffer, handle, app_state);
 	}
+}
+
+Buffer core_input_data_accumulate(Core_Packet_Data data_packet, App_State* app_state)
+{
+	Buffer result{};
+
+	Stream data_packet_stream =
+	{
+		.buffer =
+		{
+			.size = data_packet.data_size,
+			.data = data_packet.data,
+		},
+	};
+
+	static uint32_t target_size;
+	static uint32_t is_occupied;
+	if (!is_occupied)
+	{
+		is_occupied = 1;
+		target_size = read_uint32_t_big(&data_packet_stream);
+	}
+	memcpy(STREAM_REMAINING_DATA(app_state->fragment_accumulator), STREAM_REMAINING_DATA(data_packet_stream), STREAM_REMAINING_SIZE(data_packet_stream));
+	app_state->fragment_accumulator.cursor += STREAM_REMAINING_SIZE(data_packet_stream);
+
+	if (app_state->fragment_accumulator.cursor == target_size)
+	{
+		result.data = app_state->fragment_accumulator.buffer.data;
+		result.size = app_state->fragment_accumulator.cursor;
+		app_state->fragment_accumulator.cursor = 0;
+		is_occupied = 0;
+		target_size = 0;
+	}
+
+	return result;
 }
 
 void core_packet_unpack(Stream* packet_stream, void* result_ptr, Core_Packet_Kind packet_kind, uint32_t is_sub_packet, Protocol_Args args)
@@ -117,7 +154,7 @@ void core_packet_unpack(Stream* packet_stream, void* result_ptr, Core_Packet_Kin
 			packet_stream->cursor++;
 		}
 
-		data_packet->sequence = read_u8_big(packet_stream);
+		data_packet->sequence = read_uint16_t_big(packet_stream);
 
 		int64_t data_end;
 		if (is_sub_packet)
@@ -224,10 +261,9 @@ void core_data_send(Buffer data_buffer, uint32_t ignore_encryption, Session_Hand
 {
 	Session_State* session = session_get_pointer_from_handle(&app_state->session_pool, session_handle);
 
-
-	Stream output_stream =
+	Stream output_stream
 	{
-		.buffer =
+		.buffer
 		{
 			.size = data_buffer.size - CORE_DATA_FRAGMENT_EXTRA_SIZE,
 			.data = data_buffer.data + CORE_DATA_FRAGMENT_EXTRA_SIZE,
@@ -251,7 +287,7 @@ void core_data_send(Buffer data_buffer, uint32_t ignore_encryption, Session_Hand
 		output_stream.buffer.size += CORE_DATA_FRAGMENT_EXTRA_SIZE;
 		output_stream.buffer.data = (uint8_t*)((uint64_t)output_stream.buffer.data - CORE_DATA_FRAGMENT_EXTRA_SIZE);
 
-		write_uint32_t_big((Stream*)((uintptr_t)output_stream.buffer.data + output_stream.cursor), (uint32_t)output_stream.buffer.size - CORE_DATA_FRAGMENT_EXTRA_SIZE);
+		write_uint32_t_big_at((void*)((uintptr_t)output_stream.buffer.data + output_stream.cursor), (uint32_t)output_stream.buffer.size - CORE_DATA_FRAGMENT_EXTRA_SIZE);
 
 		packets_required = ((uint32_t)output_stream.buffer.size + MAX_CORE_DATA_FRAGMENT_SIZE - 1) / MAX_CORE_DATA_FRAGMENT_SIZE;
 		packet_kind = Core_Packet_Kind_DataFragment;
@@ -262,9 +298,9 @@ void core_data_send(Buffer data_buffer, uint32_t ignore_encryption, Session_Hand
 		uint32_t size_to_write = MIN(MAX_CORE_DATA_FRAGMENT_SIZE, (uint32_t)output_stream.buffer.size - (uint32_t)output_stream.cursor);
 
 		session->sequence_out++;
-		Core_Packet_Data packet =
+		Core_Packet_Data packet
 		{
-			.sequence = (uint8_t)session->sequence_out,
+			.sequence = (uint16_t)session->sequence_out,
 			.data = output_stream.buffer.data + output_stream.cursor,
 			.data_size = size_to_write,
 		};
@@ -283,7 +319,7 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 	uint16_t packet_id = read_uint16_t_big(&packet_stream);
 	Core_Packet_Kind packet_kind = Core_Packet_Kind_Invalid;
 
-	for (int kind_iter = global_core_packet_begin; kind_iter < global_core_packet_count; kind_iter++)
+	for (int32_t kind_iter = global_core_packet_begin; kind_iter < global_core_packet_count; kind_iter++)
 	{
 		if (packet_id == global_core_packet_ids[kind_iter])
 		{
@@ -323,20 +359,13 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 			.session_id = session->id,
 			.crc_seed = session->args.crc_seed,
 			.crc_size = session->args.crc_size,
-			.compression = (uint8_t)session->args.compression,
+			.compression = session->args.compression,
 			.udp_size = session->args.udp_size,
 		};
+		session_callback(session_handle, app_state);
 		core_packet_send(&reply, Core_Packet_Kind_SessionReply, session_handle, app_state);
 
-		on_session_established(session_handle, app_state);
-	} break;
-	case Core_Packet_Kind_Ack:
-	{
-		Core_Packet_Ack ack_packet{};
-		core_packet_unpack(&packet_stream, &ack_packet, packet_kind, is_sub_packet, session->args);
-
-		printf("Received ack %d\n", ack_packet.sequence);
-
+		session_callback(session_handle, app_state);
 	} break;
 	case Core_Packet_Kind_Data:
 	case Core_Packet_Kind_DataFragment:
@@ -347,10 +376,11 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 		if (packet.sequence != session->sequence_in + 1)
 		{
 			printf("Sequence out of order. expected %d, got %u\n", session->sequence_in + 1, packet.sequence);
-			session->sequence_in++;
+			return;
 		}
+		session->sequence_in++;
 
-		uint32_t is_fragment = packet_kind == Core_Packet_Kind_DataFragment;
+		int32_t is_fragment = packet_kind == Core_Packet_Kind_DataFragment;
 		if (is_fragment)
 		{
 			Buffer completed_data_buffer{};
@@ -368,7 +398,7 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 			static uint32_t is_occupied;
 			if (!is_occupied)
 			{
-				is_occupied = true;
+				is_occupied = TRUE;
 				target_size = read_uint32_t_big(&data_stream);
 			}
 			memcpy(STREAM_REMAINING_DATA(app_state->fragment_accumulator), STREAM_REMAINING_DATA(data_stream), STREAM_REMAINING_SIZE(data_stream));
@@ -379,7 +409,7 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 				completed_data_buffer.data = app_state->fragment_accumulator.buffer.data;
 				completed_data_buffer.size = app_state->fragment_accumulator.cursor;
 				app_state->fragment_accumulator.cursor = 0;
-				is_occupied = false;
+				is_occupied = 0;
 				target_size = 0;
 			}
 
@@ -390,7 +420,8 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 		}
 		else
 		{
-			Buffer data_buffer{
+			Buffer data_buffer 
+			{
 				.size = packet.data_size,
 				.data = packet.data,
 			};
@@ -415,7 +446,7 @@ void core_packet_route(Buffer packet_buffer, uint32_t is_sub_packet, Session_Han
 				.data = STREAM_REMAINING_DATA(packet_stream),
 			};
 
-			core_packet_route(chunk_buffer, true, session_handle, app_state);
+			core_packet_route(chunk_buffer, 1, session_handle, app_state);
 			packet_stream.cursor += chunk_size;
 		}
 	} break;

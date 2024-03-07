@@ -8,7 +8,7 @@ typedef struct
 	HMODULE module;
 	FILETIME last_write_time;
 	app_tick_t* tick_func;
-	unsigned int is_valid;
+	uint32_t is_valid;
 } App_Code;
 
 APP_TICK(app_tick_stub)
@@ -81,19 +81,19 @@ int main(void)
 	LARGE_INTEGER performance_freq;
 	QueryPerformanceFrequency(&performance_freq);
 
-	unsigned int is_sleep_granular = timeBeginPeriod(1) == TIMERR_NOERROR;
+	uint32_t is_sleep_granular = timeBeginPeriod(1) == TIMERR_NOERROR;
 	float tick_rate = 64.f;
 	float seconds_per_tick = 1.f / tick_rate;
 
 	App_Code code = app_code_load();
 
-	unsigned long long previous_counter = socket_win_wall_clock();
-	unsigned int is_running = true;
+	uint64_t previous_counter = socket_win_wall_clock();
+	uint32_t is_running = true;
 
 	while (is_running)
 	{
 		code.tick_func(&memory);
-		unsigned long long work_counter = socket_win_wall_clock();
+		uint64_t work_counter = socket_win_wall_clock();
 
 		memory.ms_work = 1000.f * socket_win_elapsed_seconds(previous_counter, work_counter);
 		float tick_elapsed_seconds = socket_win_elapsed_seconds(previous_counter, socket_win_wall_clock());
@@ -114,7 +114,7 @@ int main(void)
 			}
 		}
 
-		unsigned long long end_counter = socket_win_wall_clock();
+		uint64_t end_counter = socket_win_wall_clock();
 		memory.ms_tick = 1000.f * socket_win_elapsed_seconds(previous_counter, end_counter);
 
 		previous_counter = end_counter;

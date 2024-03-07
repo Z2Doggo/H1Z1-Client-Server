@@ -122,7 +122,7 @@ Buffer pack_login_packet(Arena* arena, void* packet_ptr, Login_Packet_Kind packe
         // 44:  stream: char_payload
         void* char_payload_size_ptr = (void*)((uintptr_t)arena->memory + arena->cursor);
         arena->cursor += sizeof(uint32_t);
-        uint32_t will_pack_char_payload = packet->char_payload_size == ~0 ? false : true;
+        uint32_t will_pack_char_payload = packet->char_payload_size == ~0 ? 0 : 1;
         if (!will_pack_char_payload)
         {
             write_uint32_t_little_at(char_payload_size_ptr, 0);
@@ -168,7 +168,7 @@ Buffer pack_login_packet(Arena* arena, void* packet_ptr, Login_Packet_Kind packe
         // 63:  stream: payload2
         void* payload2_size_ptr = (void*)((uintptr_t)arena->memory + arena->cursor);
         arena->cursor += sizeof(uint32_t);
-        uint32_t will_pack_payload2 = packet->payload2_size == ~0 ? false : true;
+        uint32_t will_pack_payload2 = packet->payload2_size == ~0 ? 0 : 1;
         if (!will_pack_payload2)
         {
             write_uint32_t_little_at(payload2_size_ptr, 0);
@@ -203,7 +203,7 @@ Buffer pack_login_packet(Arena* arena, void* packet_ptr, Login_Packet_Kind packe
         // 77:  stream: login_payload
         void* login_payload_size_ptr = (void*)((uintptr_t)arena->memory + arena->cursor);
         arena->cursor += sizeof(uint32_t);
-        uint32_t will_pack_login_payload = packet->login_payload_size == ~0 ? false : true;
+        uint32_t will_pack_login_payload = packet->login_payload_size == ~0 ? 0 : 1;
         if (!will_pack_login_payload)
         {
             write_uint32_t_little_at(login_payload_size_ptr, 0);
@@ -279,7 +279,7 @@ Buffer pack_login_packet(Arena* arena, void* packet_ptr, Login_Packet_Kind packe
         // 100:  stream: data_client
         void* data_client_size_ptr = (void*)((uintptr_t)arena->memory + arena->cursor);
         arena->cursor += sizeof(uint32_t);
-        uint32_t will_pack_data_client = packet->data_client_size == ~0 ? false : true;
+        uint32_t will_pack_data_client = packet->data_client_size == ~0 ? 0 : 1;
         if (!will_pack_data_client)
         {
             write_uint32_t_little_at(data_client_size_ptr, 0);
@@ -310,7 +310,7 @@ Buffer pack_login_packet(Arena* arena, void* packet_ptr, Login_Packet_Kind packe
         // 111:  stream: data_server
         void* data_server_size_ptr = (void*)((uintptr_t)arena->memory + arena->cursor);
         arena->cursor += sizeof(uint32_t);
-        uint32_t will_pack_data_server = packet->data_server_size == ~0 ? false : true;
+        uint32_t will_pack_data_server = packet->data_server_size == ~0 ? 0 : 1;
         if (!will_pack_data_server)
         {
             write_uint32_t_little_at(data_server_size_ptr, 0);
@@ -390,7 +390,7 @@ Buffer pack_login_packet(Arena* arena, void* packet_ptr, Login_Packet_Kind packe
             // 143:  stream: payload
             void* payload_size_ptr = (void*)((uintptr_t)arena->memory + arena->cursor);
             arena->cursor += sizeof(uint32_t);
-            uint32_t will_pack_payload = packet->characters[characters_iter].payload_size == ~0 ? false : true;
+            uint32_t will_pack_payload = packet->characters[characters_iter].payload_size == ~0 ? 0 : 1;
             if (!will_pack_payload)
             {
                 write_uint32_t_little_at(payload_size_ptr, 0);
@@ -734,4 +734,44 @@ Buffer pack_login_packet(Arena* arena, void* packet_ptr, Login_Packet_Kind packe
 		.data = data_begin,
 	};
 	return result;
+}
+
+uintptr_t unpack_login_packet(Arena* arena, Stream* stream, void* result_ptr, Login_Packet_Kind packet_kind)
+{
+    uintptr_t cursor_begin = stream->cursor;
+    switch (packet_kind)
+    {
+    case Login_Packet_Kind_LoginRequest:
+    {
+        Login_Packet_LoginRequest* packet = (Login_Packet_LoginRequest*)result_ptr;
+        // 5:  string:u32 session_id
+        packet->session_id.size = read_uint32_t_little(stream);
+        packet->session_id.data = (uint8_t*)arena_push_size(arena, packet->session_id.size);
+        for (uintptr_t session_id_iter = 0; session_id_iter < (uintptr_t)packet->session_id.size; session_id_iter++)
+        {
+            packet->session_id.data[session_id_iter] = read_u8_little(stream);
+        }
+        // 6:  string:u32 system_fingerprint
+        packet->system_fingerprint.size = read_uint32_t_little(stream);
+        packet->system_fingerprint.data = (uint8_t*)arena_push_size(arena, (uint32_t)packet->system_fingerprint.size);
+        for (uintptr_t system_fingerprint_iter = 0; system_fingerprint_iter < (uintptr_t)packet->system_fingerprint.size; system_fingerprint_iter++)
+        {
+            packet->system_fingerprint.data[system_fingerprint_iter] = read_u8_little(stream);
+        }
+        // 7:  u32 locale
+        packet->locale = read_uint32_t_little(stream);
+        // 8:  u32 third_party_auth_ticket
+        packet->third_party_auth_ticket = read_uint32_t_little(stream);
+        // 9:  u32 third_party_user_id
+        packet->third_party_user_id = read_uint32_t_little(stream);
+        // 10:  u32 third_party_id
+        packet->third_party_id = read_uint32_t_little(stream);
+    } break;
+    default:
+    {
+        printf("unpacking not handled");
+    }
+    }
+
+    return stream->cursor - cursor_begin;
 }

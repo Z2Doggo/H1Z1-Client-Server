@@ -18,7 +18,7 @@
 
 struct Session_Handle
 {
-	unsigned int id;
+	uint32_t id;
 };
 
 enum Session_Kind
