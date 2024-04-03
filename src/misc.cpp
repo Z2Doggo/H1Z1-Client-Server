@@ -20,7 +20,7 @@ void arena_push_alignment(Arena* arena, uintptr_t alignment)
 	arena->cursor = total_size;
 }
 
-void* arena_push_size(Arena* arena, uintptr_t size)
+void* arena_push_size(Arena* arena, size_t size)
 {
 	uintptr_t aligned_ptr = ALIGN_POW2((uintptr_t)arena->memory + arena->cursor, arena->alignment);
 	uintptr_t total_size = (aligned_ptr + size) - (uintptr_t)arena->memory;
@@ -28,13 +28,21 @@ void* arena_push_size(Arena* arena, uintptr_t size)
 	memset((void*)aligned_ptr, 0, size);
 	arena->cursor = total_size;
 
-	return (void*)aligned_ptr;
+	return reinterpret_cast<void*>(aligned_ptr);
 }
 
 void* arena_push_copy(Arena* arena, void* memory_to_copy, size_t size)
 {
 	void* result = arena_push_size(arena, size + 1);
-	memcpy(result, memory_to_copy, size);
+	memcpy(&result, memory_to_copy, size);
+
+	return result;
+}
+
+void* arena_push_copy_zt(Arena* arena, void* memory, size_t size)
+{
+	void* result = arena_push_size(arena, size + 1);
+	memcpy(result, memory, size);
 
 	return result;
 }
@@ -184,10 +192,22 @@ void rc4_transform(RC4* state, uint8_t* data, size_t data_size)
 	}
 }
 
-Buffer buffer_from_array(size_t size, void* data)
+Buffer buffer_from_array(size_t size, uint8_t* data)
 {
 	Buffer result{};
 	result.size = size;
-	result.data = (uint8_t*)data;
+	result.data = static_cast<uint8_t*>(data);
 	return result;
+}
+
+uint32_t mem_match(void* data_1, void* data_2, size_t size)
+{
+	for (size_t i = 0; i < size; i++)
+	{
+		if (*((uint8_t*)data_1 + i) != *((uint8_t*)data_2 + i))
+		{
+			return 0;
+		}
+	}
+	return 1;
 }

@@ -1,4 +1,4 @@
-#include "app_memory.hpp"
+#include "main_login.hpp"
 
 #define MODULE_FILE "H1_Login_Module.dll"
 #define MODULE_FILE_TEMP "H1_Login_Module_TEMP.dll"
@@ -64,7 +64,7 @@ void app_code_unload(App_Code* code)
 
 int main(void)
 {
-	App_Memory memory{
+	Memory memory{
 		.api{
 			.folder_create = socket_win_folder_create,
 			.buffer_write_to_file = socket_win_buffer_write_to_file,

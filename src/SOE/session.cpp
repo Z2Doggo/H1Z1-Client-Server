@@ -1,119 +1,103 @@
 #include "../main_login.hpp"
 
-void session_free_all_from_pool(Session_Pool* pool)
+void Pool::free_all(Pool* pool)
 {
 	pool->free_head_index = 1;
-	for (unsigned int iter = 1; iter < pool->slots_capacity - 1; iter++)
+	for (uint32_t i = free_head_index; i < pool->slots_capacity - 1; i++)
 	{
-		pool->slots[iter].session_content.next_index = iter + 1;
-		pool->slots[iter].kind = Session_Slot_Kind_Free;
+		pool->slots[i].content.next_index = i + 1;
+		pool->slots[i].slot_enums = Slot_Enums::Free;
 	}
 
-	pool->slots[pool->slots_capacity - 1].session_content.next_index = 0;
-	pool->slots[pool->slots_capacity - 1].kind = Session_Slot_Kind_Free;
+	pool->slots[pool->slots_capacity - 1].content.next_index = 0;
+	pool->slots[pool->slots_capacity - 1].slot_enums = Slot_Enums::Free;
 }
 
-Session_Pool session_pool_create(Arena* arena, uint32_t capacity)
+Pool Pool::create_session(Arena* arena, uint32_t capacity)
 {
-	Session_Pool result{
+	Pool pool{
 		.slots_capacity = capacity,
-		.slots = (Session_Slot*)arena_push_array(arena, Session_Slot, capacity),
+		.slots = static_cast<Slot*>(arena_push_size(arena, sizeof(Slot) * capacity)),
 		.map_bucket_count = SESSION_MAP_OVERHEAD(capacity),
-		.session_address_map = (Session_Address_Bucket*)arena_push_array(arena, Session_Address_Bucket, result.map_bucket_count),
+		.session_address_map = static_cast<Address_Bucket*>(arena_push_size(arena, sizeof(Address_Bucket) * pool.map_bucket_count)),
 	};
 
-	session_free_all_from_pool(&result);
-	return result;
+	free_all(&pool);
+	return pool;
 }
 
-void session_address_map_insert(Session_Pool* pool, Session_Address address, Session_Handle handle)
+void Pool::map_insert(Pool* pool, Address address, uint32_t handle_id)
 {
 	uint32_t index = address.full % pool->map_bucket_count;
 
-	for (uint32_t collision_iter = 0; pool->session_address_map[index].value.id; index++, collision_iter++)
+	for (uint32_t collision_iter = 0; pool->session_address_map[index].handle_id; index++, collision_iter++)
 	{
 		if (collision_iter == SESSION_MAP_MAX_COLLISION)
 		{
-			printf("Max collision count reached\n");
+			std::cout << "Max collision count reached\n";
 			return;
 		}
 
-		if (pool->session_address_map[index].value.id == handle.id)
+		if (pool->session_address_map[index].handle_id == handle_id)
 		{
-			printf("Inserting duplicate value in address map\n");
+			std::cout << "Inserting duplicate value in address map\n";
 			return;
 		}
 	}
 	pool->session_address_map[index].key = address;
-	pool->session_address_map[index].value = handle;
+	pool->session_address_map[index].handle_id = handle_id;
 }
 
-Session_Handle session_get_handle_from_address(Session_Pool* pool, Session_Address address)
+uint32_t Pool::get_id_from_address(Pool* pool, Address address)
 {
 	uint32_t index = address.full % pool->map_bucket_count;
-
 	for (uint32_t collision_iter = 0; pool->session_address_map[index].key.full != address.full; index++, collision_iter++)
 	{
 		if (collision_iter == SESSION_MAP_MAX_COLLISION)
 		{
-			return {};
+			return 0;
 		}
 	}
 
-	return pool->session_address_map[index].value;
+	return pool->session_address_map[index].handle_id;
 }
 
-uint32_t session_address_map_key_exists(Session_Pool* pool, Session_Address address)
+uint32_t Pool::acquire_session(Pool* pool, Address address)
 {
-	(void)pool;
-	(void)address;
-
-	return 0;
-}
-
-Session_Handle session_acquire(Session_Pool* pool, Session_Address address)
-{
-	Session_Handle result{};
+	uint32_t result = 0;
 
 	if (pool->active_count >= pool->slots_capacity)
 	{
-		printf("Session pool full\n");
-		return {};
+		std::cout << "Session pool is full\n";
+		return 0;
 	}
 
 	uint32_t index = pool->free_head_index;
-	Session_Slot* slot = &pool->slots[index];
+	Slot* slot = &pool->slots[index];
 
-	pool->free_head_index = slot->session_content.next_index;
+	pool->free_head_index = slot->content.next_index;
 	pool->active_count++;
 	slot->generation++;
-	slot->kind = Session_Slot_Kind_Active;
+	slot->slot_enums = Slot_Enums::Active;
 
-	SESSION_HANDLE_INDEX_WRITE(result.id, index);
-	SESSION_HANDLE_GENERATION_WRITE(result.id, slot->generation);
-	session_address_map_insert(pool, address, result);
+	SESSION_HANDLE_INDEX_WRITE(result, index);
+	SESSION_HANDLE_GENERATION_WRITE(result, slot->generation);
+	map_insert(pool, address, result);
 
-	memset(&slot->session_content, 0, sizeof(slot->session_content));
-	Session_State* state = &slot->session_content.state;
-	state->handle = result;
-	state->addr = address;
-
-	return result;
-}
-
-Session_State* session_get_pointer_from_handle(Session_Pool* pool, Session_Handle handle)
-{
-	printf("[Server] - Getting session pointer for %#x\n", handle.id);
-
-	uint32_t generation = SESSION_HANDLE_GENERATION_READ(handle.id);
-	uint32_t index = SESSION_HANDLE_INDEX_READ(handle.id);
-	Session_State* result = &pool->slots[index].session_content.state;
+	memset(&slot->content, 0, sizeof(slot->content));
+	Session* state = &slot->content.session;
+	state->handle_id = result;
+	state->address = address;
 
 	return result;
 }
-
-void session_release(Session_Pool* pool, Session_Handle handle)
+Session* Pool::get_ptr_from_id(Pool* pool, uint32_t handle_id)
 {
-	(void)pool;
-	(void)handle;
+	std::cout << "[Session] - Getting session ptr for 0x" << std::hex << handle_id << "\n";
+
+	uint32_t generation = SESSION_HANDLE_GENERATION_READ(handle_id);
+	uint32_t index = SESSION_HANDLE_INDEX_READ(handle_id);
+	Session* session = &pool->slots[index].content.session;
+
+	return session;
 }

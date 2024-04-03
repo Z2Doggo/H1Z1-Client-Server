@@ -12,16 +12,16 @@ endif()
 project ("H1Z1-Client-Server")
 
 # Add source to this project's shared executable.
-add_library(H1_Login_Module SHARED "src/main_login.cpp" "src/app_memory.hpp" "src/win32_sockets.hpp" "src/misc.cpp" "src/win32_sockets.cpp" "src/SOE/session.cpp" "src/SOE/core_protocol.hpp" "src/SOE/core_protocol.cpp" "src/binary.hpp" "src/binary.cpp" "src/Packets/LoginUdp_11/login_packets.hpp" "src/Packets/LoginUdp_11/login_packets.cpp" "src/Login_Server/login.hpp" "src/Login_Server/login.cpp")
+add_library(H1_Login_Module SHARED "src/main_login.cpp" "src/win32_sockets.hpp" "src/misc.cpp" "src/win32_sockets.cpp" "src/binary.hpp" "src/binary.cpp" "src/Login_Server/login.hpp"  "src/OLD_endian.cpp" "src/Packets/LoginUdp_11/LoginUdp_11.hpp" "src/Packets/LoginUdp_11/LoginUdp_11.cpp" "src/SOE/soe_protocol.hpp" "src/SOE/soe_protocol.cpp" "src/SOE/session.cpp")
 
 # Link against the necessary libraries
-target_link_libraries(H1_Login_Module PRIVATE ws2_32 PRIVATE winmm.lib)
+target_link_libraries(H1_Login_Module PRIVATE ws2_32.lib PRIVATE winmm.lib PRIVATE kernel32.lib)
 
 # Add source to this project's executable.
-add_executable (H1Z1-Client-Server "src/win32_login.cpp" "src/app_memory.hpp" "src/win32_sockets.hpp" "src/misc.cpp" "src/win32_sockets.cpp" "src/SOE/session.cpp" "src/SOE/core_protocol.hpp" "src/SOE/core_protocol.cpp" "src/binary.hpp" "src/binary.cpp" "src/Packets/LoginUdp_11/login_packets.hpp" "src/Packets/LoginUdp_11/login_packets.cpp" "src/Login_Server/login.hpp" "src/Login_Server/login.cpp")
+add_executable (H1Z1-Client-Server "src/win32_login.cpp" "src/win32_sockets.hpp" "src/misc.cpp" "src/win32_sockets.cpp" "src/binary.hpp" "src/binary.cpp" "src/Login_Server/login.hpp"  "src/OLD_endian.cpp" "src/Packets/LoginUdp_11/LoginUdp_11.hpp" "src/Packets/LoginUdp_11/LoginUdp_11.cpp" "src/SOE/soe_protocol.hpp" "src/SOE/soe_protocol.cpp" "src/SOE/session.cpp")
 
 # Link against the necessary libraries
-target_link_libraries(H1Z1-Client-Server PRIVATE ws2_32 PRIVATE winmm.lib PUBLIC H1_Login_Module)
+target_link_libraries(H1Z1-Client-Server PRIVATE ws2_32.lib PRIVATE winmm.lib PRIVATE kernel32.lib PUBLIC H1_Login_Module)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET H1_Login_Module PROPERTY CXX_STANDARD 20)

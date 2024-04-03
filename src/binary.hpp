@@ -28,21 +28,6 @@
 #define push_b8_little push_uint8_t
 #define push_b8_big push_uint8_t
 
-struct vec3
-{
-	float x;
-	float y;
-	float z;
-};
-
-struct vec4
-{
-	float x;
-	float y;
-	float z;
-	float w;
-};
-
 uint8_t read_uint8_t_at(void* memory);
 uint16_t read_uint16_t_little_at(void* memory);
 uint32_t read_uint32_t_little_at(void* memory);
