@@ -1,4 +1,4 @@
-#include "main_login.hpp"
+#include "Login_Server/login.hpp"
 
 extern "C" __declspec(dllexport) APP_TICK(server_tick)
 {
@@ -16,7 +16,7 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 		app->fragment_accumulator =
 		{ 
 			.buffer{
-				.size = MB(6),
+				.size = MB(10),
 				.data = static_cast<uint8_t*>(arena_push_size(memory->arena_total, MB(10))),
 			},
 		};
@@ -26,10 +26,10 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 
     DEFER_SCOPE(0, arena_reset(app->arena_per_tick)) 
     {
-        uint8_t incoming_buffer[512]{};
+        uint8_t incoming_buffer[MAX_PACKET_SIZE]{};
         uint32_t from_ip;
         uint16_t from_port;
-        int32_t receive_result = app->api->receive_from(app->socket, incoming_buffer, 512, &from_ip,  &from_port);
+        int32_t receive_result = app->api->receive_from(app->socket, incoming_buffer, MAX_PACKET_SIZE, &from_ip,  &from_port);
 
         if (receive_result) 
         {
@@ -53,8 +53,8 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
                     .crc_seed = 0,
                     .crc_size = 0,
                     .compression = 0,
-                    .udp_size = 512,
-                    .use_encryption = 0,
+                    .udp_size = MAX_PACKET_SIZE,
+                    .use_encryption = FALSE,
                 };
                 session->acked_in = -1;
                 session->sequence_in = -1;
@@ -72,7 +72,7 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
                 .size = static_cast<uintptr_t>(receive_result),               
                 .data = incoming_buffer 
             };
-            memory->soe_packet_route(packet_buffer, FALSE, session_handle, app);
+            memory->soe_packet_route(packet_buffer, FALSE, session_handle, app, memory->soe_protocol);
             
             if (&session->sequence_in > &session->acked_in) 
             {

@@ -3,30 +3,36 @@
 
 #include "../main_login.hpp"
 
+#define MAX_PACKET_SIZE 512
+#define CORE_PACKET_ID_SIZE 2
+#define CORE_DATA_SEQUENCE_SIZE 2
+#define CORE_DATA_FRAGMENT_EXTRA_SIZE 4
+#define MAX_CORE_DATA_FRAGMENT_SIZE (MAX_PACKET_SIZE - CORE_PACKET_ID_SIZE - CORE_DATA_SEQUENCE_SIZE)
+
 enum class SOE_Protocol : uint16_t // just to be sure
 {
-    Invalid = 0x0000,
-    SessionRequest = 0x0001,
-    SessionReply = 0x0002,
-    MultiPacket = 0x0003,
-    Disconnect = 0x0005,
-    Ping = 0x0006,
-    NetStatusRequest = 0x0007,
-    NetStatusReply = 0x0008,
-    Data = 0x0009,
-    DataFragment = 0x000d,
-    OutOfOrder = 0x0011,
-    Ack = 0x0015,
-    Unknown_1c = 0x001c,
-    FatalError = 0x001d,
-    FatalErrorReply = 0x001e,
-    Unknown_1f = 0x001f,
-    End = 0xffff
+    Invalid,
+    SessionRequest,
+    SessionReply,
+    MultiPacket,
+    Disconnect,
+    Ping,
+    NetStatusRequest,
+    NetStatusReply,
+    Data,
+    DataFragment,
+    OutOfOrder,
+    Ack,
+    Unknown_1c,
+    FatalError,
+    FatalErrorReply,
+    Unknown_1f,
+    End,
 };
 
 static std::array<uint16_t, static_cast<uint16_t>(SOE_Protocol::End) + 1>soe_protocol_ids
 { 
-    0x0000,
+    0xffff,
     0x0001, 
     0x0002, 
     0x0003, 
@@ -112,14 +118,14 @@ public:
     Buffer buffer;
     Protocol_Params params;
 
-    void soe_packet_callback(Buffer buffer, uint32_t handle_id, Application* app);
+    void soe_packet_callback(Buffer buffer, uint32_t handle_id, Application* app, SOE* soe_protocol);
     void soe_session_callback(uint32_t handle_id, Application* app);
     uint32_t soe_read_data_chunk_size(Stream* stream);
-    void soe_input_process_data_chunks(Buffer buffer, Protocol_Params params, uint32_t handle_id, Application* app);
+    void soe_input_process_data_chunks(Buffer buffer, Protocol_Params params, uint32_t handle_id, Application* app, SOE* soe_protocol);
     void soe_unpack(Stream* stream, void* ptr, SOE_Protocol soe_protocol, uint32_t is_sub, Protocol_Params params);
     void soe_packet_send(void* ptr, SOE_Protocol soe_protocol, uint32_t handle_id, Application* app);
     void soe_data_send(Buffer buffer, uint32_t ignore_encryption, uint32_t handle_id, Application* app);
-    void soe_packet_route(Buffer buffer, uint32_t is_sub, uint32_t handle_id, Application* app);
+    void soe_packet_route(Buffer buffer, uint32_t is_sub, uint32_t handle_id, Application* app, SOE* soe_protocol);
 };
 
 class Memory : public SOE
@@ -128,6 +134,7 @@ public:
     Socket_Api api;
     Arena* arena_total;
     Application* app;
+    SOE* soe_protocol;
     float ms_tick;
     float ms_work;
     uint64_t tick_count;

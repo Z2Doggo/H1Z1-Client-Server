@@ -363,8 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # CUSTOM
-src/OLD_endian.hpp
-src/OLD_endian.cpp
+# src/OLD_endian.hpp
+# src/OLD_endian.cpp
 schema_tool.exe
 src/schema_tool.cpp
 src/Packets/LoginUdp_11/LoginUdp_11.schm

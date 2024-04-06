@@ -3,7 +3,7 @@
 void Pool::free_all(Pool* pool)
 {
 	pool->free_head_index = 1;
-	for (uint32_t i = free_head_index; i < pool->slots_capacity - 1; i++)
+	for (uint32_t i = 1; i < pool->slots_capacity - 1; i++)
 	{
 		pool->slots[i].content.next_index = i + 1;
 		pool->slots[i].slot_enums = Slot_Enums::Free;
@@ -69,7 +69,6 @@ uint32_t Pool::acquire_session(Pool* pool, Address address)
 	if (pool->active_count >= pool->slots_capacity)
 	{
 		std::cout << "Session pool is full\n";
-		return 0;
 	}
 
 	uint32_t index = pool->free_head_index;
@@ -91,6 +90,7 @@ uint32_t Pool::acquire_session(Pool* pool, Address address)
 
 	return result;
 }
+
 Session* Pool::get_ptr_from_id(Pool* pool, uint32_t handle_id)
 {
 	std::cout << "[Session] - Getting session ptr for 0x" << std::hex << handle_id << "\n";

@@ -75,7 +75,7 @@ int main(void)
 			.receive_from = socket_win_receive_from,
 			.send_to = socket_win_send_to,
 		},
-		.arena_total = arena_alloc(MB(100)),
+		.arena_total = arena_alloc(MB(24)),
 	};
 
 	LARGE_INTEGER performance_freq;

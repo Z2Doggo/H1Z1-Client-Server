@@ -1,8 +1,10 @@
 #include "soe_protocol.hpp"
+#include "../Login_Server/login.hpp"
 
-void SOE::soe_packet_callback(Buffer buffer, uint32_t handle_id, Application* app)
+void SOE::soe_packet_callback(Buffer buffer, uint32_t handle_id, Application* app, SOE* soe_protocol)
 {
-	// login_packet_route(buffer, handle_id, app);
+	LoginUdp_11* login_protocol = nullptr;
+	login_protocol->login_packet_route(buffer, handle_id, app, soe_protocol);
 }
 
 void SOE::soe_session_callback(uint32_t handle_id, Application* app)
@@ -31,14 +33,14 @@ uint32_t SOE::soe_read_data_chunk_size(Stream* stream)
 	return chunk_len;
 }
 
-void SOE::soe_input_process_data_chunks(Buffer buffer, Protocol_Params params, uint32_t handle_id, Application* app)
+void SOE::soe_input_process_data_chunks(Buffer buffer, Protocol_Params params, uint32_t handle_id, Application* app, SOE* soe_protocol)
 {
 	Stream stream{
 		.buffer = buffer,
 	};
 	Session* session_state = get_ptr_from_id(&app->pool, handle_id);
 	
-	if (peek_u8_big(stream, 0) == 0x0 && peek_u8_big(stream, 1) == 0x19)
+	if (peek_u8_big(stream, 0) == 0x00 && peek_u8_big(stream, 1) == 0x19)
 	{
 		stream.cursor += 2;
 
@@ -56,7 +58,7 @@ void SOE::soe_input_process_data_chunks(Buffer buffer, Protocol_Params params, u
 				rc4_transform(&session_state->rc4_in, chunk_buffer.data, chunk_buffer.size);
 			}
 
-			soe_packet_callback(chunk_buffer, handle_id, app);
+			soe_packet_callback(chunk_buffer, handle_id, app, soe_protocol);
 			stream.cursor += chunk_length;
 		}
 	}
@@ -67,7 +69,7 @@ void SOE::soe_input_process_data_chunks(Buffer buffer, Protocol_Params params, u
 			rc4_transform(&session_state->rc4_in, buffer.data, buffer.size);
 		}
 
-		soe_packet_callback(buffer, handle_id, app);
+		soe_packet_callback(buffer, handle_id, app, soe_protocol);
 	}
 }
 
@@ -123,7 +125,6 @@ void SOE::soe_unpack(Stream* stream, void* ptr, SOE_Protocol soe_protocol, uint3
 		if (!is_sub && params.crc_size)
 		{
 			std::cout << "Ignoring CRC alg for now\n";
-			return;
 		}
 
 		data->data = static_cast<uint8_t*>(stream->buffer.data + stream->cursor);
@@ -140,7 +141,7 @@ void SOE::soe_unpack(Stream* stream, void* ptr, SOE_Protocol soe_protocol, uint3
 
 void SOE::soe_packet_send(void* ptr, SOE_Protocol soe_protocol, uint32_t handle_id, Application* app)
 {
-	uint8_t buffer[512]{};
+	uint8_t buffer[MAX_PACKET_SIZE]{};
 	Stream stream{
 		.buffer{
 			.size = sizeof(buffer),
@@ -148,7 +149,13 @@ void SOE::soe_packet_send(void* ptr, SOE_Protocol soe_protocol, uint32_t handle_
 		}
 	};
 	Session* session_state = get_ptr_from_id(&app->pool, handle_id);
+
 	uint16_t i = static_cast<uint16_t>(soe_protocol);
+	if (i >= 0x00 && i < soe_protocol_ids.size())
+	{
+		uint16_t id = soe_protocol_ids[i];
+		std::cout << "Sending 0x" << std::hex << id << "...\n";
+	}
 
 	switch (soe_protocol)
 	{
@@ -207,14 +214,14 @@ void SOE::soe_packet_send(void* ptr, SOE_Protocol soe_protocol, uint32_t handle_
 		session_state->address.part.ip,
 		session_state->address.part.port);
 
-	printf("Sent %zd bytes to %#x@%u.%u.%u.%u:%u\n",
-		sent_size,
-		handle_id,
-		(session_state->address.part.ip & 0xff000000) >> 24,
-		(session_state->address.part.ip & 0x00ff0000) >> 16,
-		(session_state->address.part.ip & 0x0000ff00) >> 8,
-		(session_state->address.part.ip & 0x000000ff),
-		session_state->address.part.port);
+	std::cout << "Sent " << sent_size << " bytes to 0x"
+		<< std::hex << std::setfill('0') << std::setw(8) << handle_id
+		<< "@" << std::dec
+		<< ((session_state->address.part.ip & 0xff000000) << 24) << "." 
+		<< ((session_state->address.part.ip & 0x00ff0000) << 16) << "."
+		<< ((session_state->address.part.ip & 0x0000ff00) << 8) << "."
+		<< (session_state->address.part.ip & 0x000000ff)
+		<< ":" << session_state->address.part.port << "\n";
 }
 
 void SOE::soe_data_send(Buffer buffer, uint32_t ignore_encryption, uint32_t handle_id, Application* app)
@@ -222,8 +229,8 @@ void SOE::soe_data_send(Buffer buffer, uint32_t ignore_encryption, uint32_t hand
 	Session* session_state = get_ptr_from_id(&app->pool, handle_id);
 	Stream stream{
 		.buffer{
-			.size = buffer.size - 4,
-			.data = buffer.data + 4,
+			.size = buffer.size - CORE_DATA_FRAGMENT_EXTRA_SIZE,
+			.data = buffer.data + CORE_DATA_FRAGMENT_EXTRA_SIZE,
 		}
 	};
 
@@ -235,24 +242,24 @@ void SOE::soe_data_send(Buffer buffer, uint32_t ignore_encryption, uint32_t hand
 	SOE_Protocol protocol_enum = SOE_Protocol::Invalid;
 	uint32_t packets_required = 0;
 
-	if (stream.buffer.size <= (512 - 2) - 2)
+	if (stream.buffer.size <= MAX_CORE_DATA_FRAGMENT_SIZE)
 	{
 		packets_required = 1;
 		protocol_enum = SOE_Protocol::Data;
 	}
 	else
 	{
-		stream.buffer.size += 4;
-		stream.buffer.data = stream.buffer.data - 4;
+		stream.buffer.size += CORE_DATA_FRAGMENT_EXTRA_SIZE;
+		stream.buffer.data = stream.buffer.data - CORE_DATA_FRAGMENT_EXTRA_SIZE;
 
-		write_uint32_t_big_at(stream.buffer.data + stream.cursor, static_cast<uint32_t>(stream.buffer.size - 4));
-		packets_required = static_cast<uint32_t>(stream.buffer.size + (512 - 2) - 2) - 1 / (512 - 2) - 2;
+		write_uint32_t_big_at(stream.buffer.data + stream.cursor, static_cast<uint32_t>(stream.buffer.size - CORE_DATA_FRAGMENT_EXTRA_SIZE));
+		packets_required = static_cast<uint32_t>(stream.buffer.size + MAX_CORE_DATA_FRAGMENT_SIZE - 1) / MAX_CORE_DATA_FRAGMENT_SIZE;
 		protocol_enum = SOE_Protocol::DataFragment;
 	}
 
 	for (size_t i = 0; i < packets_required; i++) 
 	{
-		uint32_t size_to_write = MIN((512 - 2) - 2, static_cast<uint32_t>(stream.buffer.size) - static_cast<uint32_t>(stream.cursor));
+		uint32_t size_to_write = MIN(MAX_CORE_DATA_FRAGMENT_SIZE, static_cast<uint32_t>(stream.buffer.size) - static_cast<uint32_t>(stream.cursor));
 		session_state->sequence_out++;
 
 		SOE_Data data{
@@ -266,114 +273,116 @@ void SOE::soe_data_send(Buffer buffer, uint32_t ignore_encryption, uint32_t hand
 	}
 }
 
-void SOE::soe_packet_route(Buffer buffer, uint32_t is_sub, uint32_t handle_id, Application* app)
+void SOE::soe_packet_route(Buffer buffer, uint32_t is_sub, uint32_t handle_id, Application* app, SOE* soe_protocol)
 {
-	Stream stream{
+	Stream packet_stream =
+	{
 		.buffer = buffer,
 	};
 
-	uint16_t opcode = read_uint16_t_big(&stream);
-	SOE_Protocol protocol_enum = SOE_Protocol::Invalid;
+	u16 packet_id = read_uint16_t_big(&packet_stream);
 
-	uint16_t soe_packet_begin = static_cast<uint16_t>(SOE_Protocol::Invalid) + 1;
-	uint16_t soe_packet_count = static_cast<uint16_t>(SOE_Protocol::End);
+	SOE_Protocol protocol_enums = SOE_Protocol::Invalid;
 
-	for (uint16_t i = soe_packet_begin; i < soe_packet_count; i++)
+	uint32_t enum_begin = static_cast<uint32_t>(SOE_Protocol::Invalid) + 1;
+	uint32_t enum_count = static_cast<uint32_t>(SOE_Protocol::End);
+
+	for (uint32_t kind_iter = enum_begin; kind_iter < enum_count; kind_iter++)
 	{
-		if (opcode != soe_protocol_ids[i])
+		if (packet_id == soe_protocol_ids[kind_iter])
 		{
-			opcode = soe_protocol_ids[i];
-			protocol_enum = static_cast<SOE_Protocol>(i);
-			break;
-		}
-		else
-		{
-			protocol_enum = static_cast<SOE_Protocol>(i);
+			protocol_enums = static_cast<SOE_Protocol>(kind_iter);
 			break;
 		}
 	}
 
-	uint16_t index = static_cast<uint16_t>(protocol_enum);
-	if (index >= 0 && index < soe_protocol_names.size()) 
+	uint16_t index = static_cast<uint16_t>(protocol_enums);
+	if (index >= 0 && index < soe_protocol_names.size())
 	{
 		std::string_view name = soe_protocol_names[index];
 		std::cout << "Routing " << name << "...\n";
 	}
-		
-	Session* session_state = get_ptr_from_id(&app->pool, handle_id);
-	if (!session_state->handle_id)
+	Session* session = get_ptr_from_id(&app->pool, handle_id);
+
+	if (!session->handle_id)
 	{
-		std::cout << "Received invalid session\n";
+		std::cout << "Got invalid session\n";
 	}
 
-	switch (protocol_enum)
+	switch (protocol_enums)
 	{
 	case SOE_Protocol::SessionRequest:
 	{
-		SOE_SessionRequest request{};
-		session_state->handle_id = request.session_id;
-		soe_unpack(&stream, &request, protocol_enum, is_sub, session_state->args);
+		SOE_SessionRequest packet{};
+		soe_unpack(&packet_stream, &packet, protocol_enums, is_sub, session->args);
 
-		SOE_SessionReply reply{
-			.session_id = session_state->handle_id,
-			.crc_seed = session_state->args.crc_seed,
-			.crc_size = session_state->args.crc_size,
-			.compression = session_state->args.compression,
-			.udp_size = session_state->args.udp_size,
+		session->handle_id = packet.session_id;
+
+		if (!packet.protocol_name[0])
+		{
+			session->session_enums = Session_Enums::PingResponder;
+		}
+
+		SOE_SessionReply reply =
+		{
+			.session_id = session->handle_id,
+			.crc_seed = session->args.crc_seed,
+			.crc_size = session->args.crc_size,
+			.compression = session->args.compression,
+			.udp_size = session->args.udp_size,
 		};
-		
-		soe_session_callback(handle_id, app);
 		soe_packet_send(&reply, SOE_Protocol::SessionReply, handle_id, app);
+
 		soe_session_callback(handle_id, app);
 	} break;
 	case SOE_Protocol::Ack:
 	{
 		SOE_Ack ack{};
-		soe_unpack(&stream, &ack, protocol_enum, is_sub, session_state->args);
+		soe_unpack(&packet_stream, &ack, protocol_enums, is_sub, session->args);
 
 		std::cout << "Received ack " << ack.sequence << "\n";
 	} break;
 	case SOE_Protocol::Data: _FALLTHROUGH;
 	case SOE_Protocol::DataFragment:
 	{
-		SOE_Data data{};
-		soe_unpack(&stream, &data, protocol_enum, is_sub, session_state->args);
+		SOE_Data packet{};
+		soe_unpack(&packet_stream, &packet, protocol_enums, is_sub, session->args);
 
-		if (data.sequence != session_state->sequence_in + 1)
+		if (packet.sequence != session->sequence_in + 1)
 		{
-			std::cout << "Sequence is out of numerical order, expected sequence #" << session_state->sequence_in + 1 << ", but got " << data.sequence << "\n";
+			std::cout << "Sequence is out of numerical order, expected sequence #" << session->sequence_in + 1 << ", but got " << packet.sequence << "\n";
 			return;
 		}
-		session_state->sequence_in++;
+		session->sequence_in++;
 
-		int32_t is_fragment = protocol_enum == SOE_Protocol::DataFragment;
+		b32 is_fragment = protocol_enums == SOE_Protocol::DataFragment;
 		if (is_fragment)
 		{
 			Buffer completed_data_buffer{};
 
-			Stream fragment_stream{
-				.buffer{
-					.size = data.data_size,
-					.data = data.data,
-				}
+			Stream data_stream =
+			{
+				.buffer =
+				{
+					.size = packet.data_size,
+					.data = packet.data,
+				},
 			};
 
-			uint32_t target_size;
-			uint32_t is_occupied = FALSE;
-
+			static uint32_t target_size;
+			static uint32_t is_occupied;
 			if (!is_occupied)
 			{
 				is_occupied = TRUE;
-				target_size = read_uint32_t_big(&fragment_stream);
+				target_size = read_uint32_t_big(&data_stream);
 			}
-
-			memcpy(STREAM_REMAINING_DATA(app->fragment_accumulator), STREAM_REMAINING_DATA(fragment_stream), STREAM_REMAINING_SIZE(fragment_stream));
-			app->fragment_accumulator.cursor += STREAM_REMAINING_SIZE(fragment_stream);
+			memcpy(STREAM_REMAINING_DATA(app->fragment_accumulator), STREAM_REMAINING_DATA(data_stream), STREAM_REMAINING_SIZE(data_stream));
+			app->fragment_accumulator.cursor += STREAM_REMAINING_SIZE(data_stream);
 
 			if (app->fragment_accumulator.cursor == target_size)
 			{
-				completed_data_buffer.size = app->fragment_accumulator.cursor;
 				completed_data_buffer.data = app->fragment_accumulator.buffer.data;
+				completed_data_buffer.size = app->fragment_accumulator.cursor;
 				app->fragment_accumulator.cursor = 0;
 				is_occupied = FALSE;
 				target_size = 0;
@@ -381,38 +390,43 @@ void SOE::soe_packet_route(Buffer buffer, uint32_t is_sub, uint32_t handle_id, A
 
 			if (completed_data_buffer.size)
 			{
-				soe_input_process_data_chunks(completed_data_buffer, session_state->args, handle_id, app);
+				soe_input_process_data_chunks(completed_data_buffer, session->args, handle_id, app, soe_protocol);
 			}
 		}
 		else
 		{
-			Buffer data_buffer{
-				.size = data.data_size,
-				.data = data.data,
+			Buffer data_buffer =
+			{
+				.size = packet.data_size,
+				.data = packet.data
 			};
-			soe_input_process_data_chunks(data_buffer, session_state->args, handle_id, app);
+			soe_input_process_data_chunks(data_buffer, session->args, handle_id, app, soe_protocol);
 		}
+
 	} break;
+
 	case SOE_Protocol::MultiPacket:
 	{
-		if (session_state->args.compression)
+		if (session->args.compression)
 		{
-			stream.cursor++;
+			packet_stream.cursor++;
 		}
-		
-		while (stream.cursor < stream.buffer.size - session_state->args.crc_size)
-		{
-			uint32_t chunk_size = soe_read_data_chunk_size(&stream);
 
-			Buffer chunk_buffer{
+		while (packet_stream.cursor < packet_stream.buffer.size - session->args.crc_size)
+		{
+			u32 chunk_size = soe_read_data_chunk_size(&packet_stream);
+
+			Buffer chunk_buffer =
+			{
 				.size = chunk_size,
-				.data = STREAM_REMAINING_DATA(stream),
+				.data = STREAM_REMAINING_DATA(packet_stream),
 			};
 
-			soe_packet_route(chunk_buffer, TRUE, handle_id, app);
-			stream.cursor += chunk_size;
+			soe_packet_route(chunk_buffer, TRUE, handle_id, app, soe_protocol);
+			packet_stream.cursor += chunk_size;
 		}
 	} break;
+
 	default:
 	{
 		std::cout << "Unhandled SOE packet\n";

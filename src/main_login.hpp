@@ -75,9 +75,9 @@ struct Address_Bucket
 
 enum class Slot_Enums
 {
-	Invalid = 0x00,
-	Free = 0x01,
-	Active = 0x02,
+	Invalid,
+	Free,
+	Active,
 };
 
 union Content
