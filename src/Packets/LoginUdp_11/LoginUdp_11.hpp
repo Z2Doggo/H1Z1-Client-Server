@@ -1,7 +1,7 @@
 #ifndef LOGINUDP_11
 #define LOGINUDP_11
 
-#include "../../OLD_endian.hpp"
+#include "../../binary.hpp"
 
 #define LOGIN_PACKET_KINDS                                                                                       \
   LOGIN_PACKET_KIND(Login_Packet_Kind_Unhandled, 0x00, "Unhandled"),                                             \
@@ -40,7 +40,7 @@ static Login_Packet_Kind login_packet_kinds[Login_Packet_Kind__End + 1]
 #undef LOGIN_PACKET_KIND
 };
 
-static uint8_t login_packet_ids[Login_Packet_Kind__End + 1]
+static u8 login_packet_ids[Login_Packet_Kind__End + 1]
 {
 #define LOGIN_PACKET_KIND(kind, id, str) id
 		LOGIN_PACKET_KINDS
@@ -57,39 +57,37 @@ static const char* login_packet_names[Login_Packet_Kind__End + 1]
 typedef struct Login_Packet_LoginRequest Login_Packet_LoginRequest;
 struct Login_Packet_LoginRequest
 {
-	u32 session_id_length;
-	char* session_id;
-	u32 system_fingerprint_length;
-	char* system_fingerprint;
-	u32 locale;
-	u32 third_party_auth_ticket;
-	u32 third_party_user_id;
-	u32 third_party_id;
+	std::string session_id;
+	std::string system_fingerprint;
+	uint32_t locale;
+	uint32_t third_party_auth_ticket;
+	uint32_t third_party_user_id;
+	uint32_t third_party_id;
 };
+
 
 
 typedef struct Login_Packet_LoginReply Login_Packet_LoginReply;
 struct Login_Packet_LoginReply
 {
-	b8 is_logged_in;
+	u8 is_logged_in;
 	u32 status;
 	u32 result_code;
-	b8 is_member;
-	b8 is_internal;
-	u32 namespace_name_length;
-	char* namespace_name;
+	u8 is_member;
+	u8 is_internal;
+	std::string namespace_name;
 	u32 account_features_count;
 	struct account_features_s
 	{
 		u32 key;
 		u32 id;
-		b8 active;
+		u8 active;
 		u32 remaining_count;
 		u32 raw_data_length;
 		char* raw_data;
 	}*account_features;
 	u32 application_payload_length;
-	uint8_t* application_payload;
+	u8* application_payload;
 	u32 error_details_count;
 	struct error_details_s
 	{
@@ -162,7 +160,7 @@ struct Login_Packet_CharacterLoginReply
 		u32 server_ticket_length;
 		char* server_ticket;
 		u32 encryption_key_length;
-		uint8_t* encryption_key;
+		u8* encryption_key;
 		u32 soe_protocol_version;
 		u64 character_id;
 		u64 unk_u64;
@@ -192,8 +190,8 @@ struct Login_Packet_TunnelAppPacketClientToServer
 	u32 data_client_length;
 	struct data_client_s
 	{
-		b8 tunnel_op_code;
-		b8 sub_op_code;
+		u8 tunnel_op_code;
+		u8 sub_op_code;
 		u32 character_name_length;
 		char* character_name;
 	}*data_client;
@@ -225,7 +223,7 @@ struct Login_Packet_CharacterDeleteReply
 	u64 character_id;
 	u32 status;
 	u32 payload3_length;
-	uint8_t* payload3;
+	u8* payload3;
 };
 
 
@@ -233,7 +231,7 @@ typedef struct Login_Packet_CharacterSelectInfoReply Login_Packet_CharacterSelec
 struct Login_Packet_CharacterSelectInfoReply
 {
 	u32 character_status;
-	b8 can_bypass_server_lock;
+	u8 can_bypass_server_lock;
 	u32 stats_item_def_2_count;
 	struct stats_item_def_2_s
 	{
@@ -330,8 +328,8 @@ struct Login_Packet_CharacterSelectInfoReply
 		u32 build_bar_group_id;
 		u32 unk_string_1_length;
 		char* unk_string_1;
-		b8 unk_bool_1;
-		b8 is_armor;
+		u8 unk_bool_1;
+		u8 is_armor;
 		u32 unk_dword_7;
 		u32 param1;
 		u32 param2;
@@ -389,7 +387,7 @@ struct Login_Packet_ServerListReply
 	{
 		u32 id;
 		u32 state;
-		b8 is_locked;
+		u8 is_locked;
 		u32 name_length;
 		char* name;
 		u32 name_id;
@@ -404,11 +402,11 @@ struct Login_Packet_ServerListReply
 		char* population_data;
 		u32 access_expression_length;
 		char* access_expression;
-		b8 is_access_allowed;
+		u8 is_access_allowed;
 	}*servers;
 };
 
-uint32_t login_packet_pack(enum Login_Packet_Kind packet_kind, void* packet_ptr, uint8_t* buffer);
-void login_packet_unpack(uint8_t* data, uint32_t data_length, enum Login_Packet_Kind packet_kind, void* packet_ptr, Arena* arena);
+uint32_t login_packet_pack(enum Login_Packet_Kind packet_kind, void* packet_ptr, char* buffer);
+void login_packet_unpack(u8* data, uint32_t data_length, enum Login_Packet_Kind packet_kind, void* packet_ptr, Arena* arena);
 
 #endif // !LOGINUDP_11

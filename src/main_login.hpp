@@ -18,31 +18,31 @@
 
 enum class Session_Enums
 {
-	Unhandled = 0x00,
-	PingResponder = 0x01,
+	Unhandled,
+	PingResponder,
 };
 
 // SESSION_ADDRESS REGION BEGIN
 struct Adress_Part
 {
-	uint32_t ip;
-	uint16_t port;
+	u32 ip;
+	u16 port;
 };
 
 union Address
 {
-	uint64_t full;
+	u64 full;
 	Adress_Part part;
 };
 // SESSION_ADDRESS REGION END
 
 struct Protocol_Params
 {
-	uint32_t crc_seed;
-	uint8_t crc_size;
-	uint16_t compression;
-	uint32_t udp_size;
-	uint32_t use_encryption;
+	u32 crc_seed;
+	u8 crc_size;
+	u16 compression;
+	u32 udp_size;
+	u32 use_encryption;
 };
 
 class Session
@@ -53,24 +53,24 @@ public:
 	Protocol_Params args;
 
 	// Fragment related
-	int32_t acked_in;
-	int32_t sequence_in;
-	int32_t sequence_out;
+	i32 acked_in;
+	i32 sequence_in;
+	i32 sequence_out;
 
 	// Encryption related
 	RC4 rc4_in;
 	RC4 rc4_out;
 
 	// Client related
-	uint32_t handle_id;
+	u32 handle_id;
 	Session_Enums session_enums;
-	uint64_t guid;
+	u64 guid;
 };
 
 struct Address_Bucket
 {
 	Address key;
-	uint32_t handle_id;
+	u32 handle_id;
 };
 
 enum class Slot_Enums
@@ -82,13 +82,13 @@ enum class Slot_Enums
 
 union Content
 {
-	uint32_t next_index;
+	u32 next_index;
 	Session session;
 };
 
 struct Slot
 {
-	uint32_t generation;
+	u32 generation;
 	Slot_Enums slot_enums;
 	Content content;
 };
@@ -96,19 +96,19 @@ struct Slot
 class Pool
 {
 public:
-	uint32_t active_count;
-	uint32_t free_head_index;
-	uint32_t slots_capacity;
+	u32 active_count;
+	u32 free_head_index;
+	u32 slots_capacity;
 	Slot* slots;
-	uint32_t map_bucket_count;
+	u32 map_bucket_count;
 	Address_Bucket* session_address_map;
 
 	void free_all(Pool* pool);
-	Pool create_session(Arena* arena, uint32_t capacity);
-	void map_insert(Pool* pool, Address address, uint32_t handle_id);
-	uint32_t get_id_from_address(Pool* pool, Address address);
-	uint32_t acquire_session(Pool* pool, Address address);
-	Session* get_ptr_from_id(Pool* pool, uint32_t handle_id);
+	Pool create_session(Arena* arena, u32 capacity);
+	void map_insert(Pool* pool, Address address, u32 handle_id);
+	u32 get_id_from_address(Pool* pool, Address address);
+	u32 acquire_session(Pool* pool, Address address);
+	Session* get_ptr_from_id(Pool* pool, u32 handle_id);
 };
 
 class Application : public Pool
@@ -118,8 +118,8 @@ public:
 	Pool pool;
 	Socket_Sock socket;
 	Arena* arena_per_tick;
-	size_t rc4_key_decoded_len;
-	uint8_t rc4_key_decoded[256];
+	usize rc4_key_decoded_len;
+	u8 rc4_key_decoded[256];
 	Stream fragment_accumulator;
 };
 

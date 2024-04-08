@@ -1,2785 +1,1891 @@
-#include "LoginUdp_11.hpp"
+#include "../../binary.hpp"
 
-uint32_t
-login_packet_pack(enum Login_Packet_Kind packet_kind, void* packet_ptr, uint8_t* buffer)
+typedef f32 f16;
+typedef u32 uint2b;
+
+struct Read_Uint2b_Result
 {
-uint32_t offset = 0;
-
-printf("\n");
-switch(packet_kind)
-{
-case Login_Packet_Kind_LoginRequest:
-{
-printf("[*] Packing LoginRequest...\n");
-Login_Packet_LoginRequest* packet = static_cast<Login_Packet_LoginRequest*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0x1);
-offset += sizeof(u8);
-
-// string session_id
-endian_write_u32_little(buffer + offset, packet->session_id_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->session_id_length, (uint64_t)packet->session_id_length, (double)packet->session_id_length);
-for (uint32_t session_id_iter = 0; session_id_iter < packet->session_id_length; session_id_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->session_id[session_id_iter]);
-offset++;
-}
-
-// string system_fingerprint
-endian_write_u32_little(buffer + offset, packet->system_fingerprint_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->system_fingerprint_length, (uint64_t)packet->system_fingerprint_length, (double)packet->system_fingerprint_length);
-for (uint32_t system_fingerprint_iter = 0; system_fingerprint_iter < packet->system_fingerprint_length; system_fingerprint_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->system_fingerprint[system_fingerprint_iter]);
-offset++;
-}
-
-// u32 locale
-endian_write_u32_little(buffer + offset, packet->locale);
-offset += sizeof(u32);
-printf("-- locale                  \t%lld\t%llxh\t%f\n", (i64)packet->locale, (uint64_t)packet->locale, (double)packet->locale);
-
-// u32 third_party_auth_ticket
-endian_write_u32_little(buffer + offset, packet->third_party_auth_ticket);
-offset += sizeof(u32);
-printf("-- third_party_auth_ticket \t%lld\t%llxh\t%f\n", (i64)packet->third_party_auth_ticket, (uint64_t)packet->third_party_auth_ticket, (double)packet->third_party_auth_ticket);
-
-// u32 third_party_user_id
-endian_write_u32_little(buffer + offset, packet->third_party_user_id);
-offset += sizeof(u32);
-printf("-- third_party_user_id     \t%lld\t%llxh\t%f\n", (i64)packet->third_party_user_id, (uint64_t)packet->third_party_user_id, (double)packet->third_party_user_id);
-
-// u32 third_party_id
-endian_write_u32_little(buffer + offset, packet->third_party_id);
-offset += sizeof(u32);
-printf("-- third_party_id          \t%lld\t%llxh\t%f\n", (i64)packet->third_party_id, (uint64_t)packet->third_party_id, (double)packet->third_party_id);
-
-} break;
-
-case Login_Packet_Kind_LoginReply:
-{
-printf("[*] Packing LoginReply...\n");
-Login_Packet_LoginReply* packet = static_cast<Login_Packet_LoginReply*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0x2);
-offset += sizeof(u8);
-
-// b8 is_logged_in
-endian_write_b8_little(buffer + offset, packet->is_logged_in);
-offset += sizeof(b8);
-printf("-- is_logged_in            \t%lld\t%llxh\t%f\n", (i64)packet->is_logged_in, (uint64_t)packet->is_logged_in, (double)packet->is_logged_in);
-
-// u32 status
-endian_write_u32_little(buffer + offset, packet->status);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// u32 result_code
-endian_write_u32_little(buffer + offset, packet->result_code);
-offset += sizeof(u32);
-printf("-- result_code             \t%lld\t%llxh\t%f\n", (i64)packet->result_code, (uint64_t)packet->result_code, (double)packet->result_code);
-
-// b8 is_member
-endian_write_b8_little(buffer + offset, packet->is_member);
-offset += sizeof(b8);
-printf("-- is_member               \t%lld\t%llxh\t%f\n", (i64)packet->is_member, (uint64_t)packet->is_member, (double)packet->is_member);
-
-// b8 is_internal
-endian_write_b8_little(buffer + offset, packet->is_internal);
-offset += sizeof(b8);
-printf("-- is_internal             \t%lld\t%llxh\t%f\n", (i64)packet->is_internal, (uint64_t)packet->is_internal, (double)packet->is_internal);
-
-// string namespace_name
-endian_write_u32_little(buffer + offset, packet->namespace_name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->namespace_name_length, (uint64_t)packet->namespace_name_length, (double)packet->namespace_name_length);
-for (uint32_t namespace_name_iter = 0; namespace_name_iter < packet->namespace_name_length; namespace_name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->namespace_name[namespace_name_iter]);
-offset++;
-}
-
-// list account_features
-endian_write_u32_little(buffer + offset, packet->account_features_count);
-offset += sizeof(u32);
-printf("-- LIST_COUNT              \t%lld\t%llxh\t%f\n", (i64)packet->account_features_count, (uint64_t)packet->account_features_count, (double)packet->account_features_count);
-
-for (uint32_t account_features_iter = 0; account_features_iter < packet->account_features_count; account_features_iter++)
-{
-// u32 key
-endian_write_u32_little(buffer + offset, packet->account_features[account_features_iter].key);
-offset += sizeof(u32);
-printf("-- key                     \t%lld\t%llxh\t%f\n", (i64)packet->account_features[account_features_iter].key, (uint64_t)packet->account_features[account_features_iter].key, (double)packet->account_features[account_features_iter].key);
-
-// u32 id
-endian_write_u32_little(buffer + offset, packet->account_features[account_features_iter].id);
-offset += sizeof(u32);
-printf("-- id                      \t%lld\t%llxh\t%f\n", (i64)packet->account_features[account_features_iter].id, (uint64_t)packet->account_features[account_features_iter].id, (double)packet->account_features[account_features_iter].id);
-
-// b8 active
-endian_write_b8_little(buffer + offset, packet->account_features[account_features_iter].active);
-offset += sizeof(b8);
-printf("-- active                  \t%lld\t%llxh\t%f\n", (i64)packet->account_features[account_features_iter].active, (uint64_t)packet->account_features[account_features_iter].active, (double)packet->account_features[account_features_iter].active);
-
-// u32 remaining_count
-endian_write_u32_little(buffer + offset, packet->account_features[account_features_iter].remaining_count);
-offset += sizeof(u32);
-printf("-- remaining_count         \t%lld\t%llxh\t%f\n", (i64)packet->account_features[account_features_iter].remaining_count, (uint64_t)packet->account_features[account_features_iter].remaining_count, (double)packet->account_features[account_features_iter].remaining_count);
-
-// string raw_data
-endian_write_u32_little(buffer + offset, packet->account_features[account_features_iter].raw_data_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->account_features[account_features_iter].raw_data_length, (uint64_t)packet->account_features[account_features_iter].raw_data_length, (double)packet->account_features[account_features_iter].raw_data_length);
-for (uint32_t raw_data_iter = 0; raw_data_iter < packet->account_features[account_features_iter].raw_data_length; raw_data_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->account_features[account_features_iter].raw_data[raw_data_iter]);
-offset++;
-}
-
-} // account_features
-
-// bytes application_payload
-endian_write_u32_little(buffer + offset, packet->application_payload_length);
-offset += sizeof(u32);
-printf("-- BYTES_LENGTH            \t%lld\t%llxh\t%f\n", (i64)packet->application_payload_length, (uint64_t)packet->application_payload_length, (double)packet->application_payload_length);
-for (uint32_t application_payload_iter = 0; application_payload_iter < packet->application_payload_length; application_payload_iter++)
-{
-endian_write_u8_little(buffer + offset, packet->application_payload[application_payload_iter]);
-offset++;
-}
-
-// list error_details
-endian_write_u32_little(buffer + offset, packet->error_details_count);
-offset += sizeof(u32);
-printf("-- LIST_COUNT              \t%lld\t%llxh\t%f\n", (i64)packet->error_details_count, (uint64_t)packet->error_details_count, (double)packet->error_details_count);
-
-for (uint32_t error_details_iter = 0; error_details_iter < packet->error_details_count; error_details_iter++)
-{
-// u32 unknown_dword1
-endian_write_u32_little(buffer + offset, packet->error_details[error_details_iter].unknown_dword1);
-offset += sizeof(u32);
-printf("-- unknown_dword1          \t%lld\t%llxh\t%f\n", (i64)packet->error_details[error_details_iter].unknown_dword1, (uint64_t)packet->error_details[error_details_iter].unknown_dword1, (double)packet->error_details[error_details_iter].unknown_dword1);
-
-// string name
-endian_write_u32_little(buffer + offset, packet->error_details[error_details_iter].name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->error_details[error_details_iter].name_length, (uint64_t)packet->error_details[error_details_iter].name_length, (double)packet->error_details[error_details_iter].name_length);
-for (uint32_t name_iter = 0; name_iter < packet->error_details[error_details_iter].name_length; name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->error_details[error_details_iter].name[name_iter]);
-offset++;
-}
-
-// string value
-endian_write_u32_little(buffer + offset, packet->error_details[error_details_iter].value_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->error_details[error_details_iter].value_length, (uint64_t)packet->error_details[error_details_iter].value_length, (double)packet->error_details[error_details_iter].value_length);
-for (uint32_t value_iter = 0; value_iter < packet->error_details[error_details_iter].value_length; value_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->error_details[error_details_iter].value[value_iter]);
-offset++;
-}
-
-} // error_details
-
-// string ip_country_code
-endian_write_u32_little(buffer + offset, packet->ip_country_code_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->ip_country_code_length, (uint64_t)packet->ip_country_code_length, (double)packet->ip_country_code_length);
-for (uint32_t ip_country_code_iter = 0; ip_country_code_iter < packet->ip_country_code_length; ip_country_code_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->ip_country_code[ip_country_code_iter]);
-offset++;
-}
-
-} break;
-
-case Login_Packet_Kind_Logout:
-{
-printf("[*] Packing Logout...\n");
-endian_write_u8_little(buffer + offset, 0x3);
-offset += sizeof(u8);
-
-} break;
-
-case Login_Packet_Kind_ForceDisconnect:
-{
-printf("[*] Packing ForceDisconnect...\n");
-endian_write_u8_little(buffer + offset, 0x4);
-offset += sizeof(u8);
-
-} break;
-
-case Login_Packet_Kind_CharacterCreateRequest:
-{
-printf("[*] Packing CharacterCreateRequest...\n");
-Login_Packet_CharacterCreateRequest* packet = static_cast<Login_Packet_CharacterCreateRequest*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0x5);
-offset += sizeof(u8);
-
-// u32 server_id
-endian_write_u32_little(buffer + offset, packet->server_id);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 unk_u32
-endian_write_u32_little(buffer + offset, packet->unk_u32);
-offset += sizeof(u32);
-printf("-- unk_u32                 \t%lld\t%llxh\t%f\n", (i64)packet->unk_u32, (uint64_t)packet->unk_u32, (double)packet->unk_u32);
-
-// stream char_payload
-void* char_payload_length_ptr = buffer + offset;
-offset += sizeof(u32);
-printf("-- STREAM_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->char_payload_length, (uint64_t)packet->char_payload_length, (double)packet->char_payload_length);
-
-uint32_t will_pack_char_payload = packet->char_payload_length == ~(u32)0 ? 0 : 1;
-for (uint32_t char_payload_iter = 0; char_payload_iter < will_pack_char_payload; char_payload_iter++)
-{
-// u8 empire_id
-endian_write_u8_little(buffer + offset, packet->char_payload[char_payload_iter].empire_id);
-offset += sizeof(u8);
-printf("-- empire_id               \t%lld\t%llxh\t%f\n", (i64)packet->char_payload[char_payload_iter].empire_id, (uint64_t)packet->char_payload[char_payload_iter].empire_id, (double)packet->char_payload[char_payload_iter].empire_id);
-
-// u32 head_type
-endian_write_u32_little(buffer + offset, packet->char_payload[char_payload_iter].head_type);
-offset += sizeof(u32);
-printf("-- head_type               \t%lld\t%llxh\t%f\n", (i64)packet->char_payload[char_payload_iter].head_type, (uint64_t)packet->char_payload[char_payload_iter].head_type, (double)packet->char_payload[char_payload_iter].head_type);
-
-// u32 profile_type
-endian_write_u32_little(buffer + offset, packet->char_payload[char_payload_iter].profile_type);
-offset += sizeof(u32);
-printf("-- profile_type            \t%lld\t%llxh\t%f\n", (i64)packet->char_payload[char_payload_iter].profile_type, (uint64_t)packet->char_payload[char_payload_iter].profile_type, (double)packet->char_payload[char_payload_iter].profile_type);
-
-// u32 gender
-endian_write_u32_little(buffer + offset, packet->char_payload[char_payload_iter].gender);
-offset += sizeof(u32);
-printf("-- gender                  \t%lld\t%llxh\t%f\n", (i64)packet->char_payload[char_payload_iter].gender, (uint64_t)packet->char_payload[char_payload_iter].gender, (double)packet->char_payload[char_payload_iter].gender);
-
-// string character_name
-endian_write_u32_little(buffer + offset, packet->char_payload[char_payload_iter].character_name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->char_payload[char_payload_iter].character_name_length, (uint64_t)packet->char_payload[char_payload_iter].character_name_length, (double)packet->char_payload[char_payload_iter].character_name_length);
-for (uint32_t character_name_iter = 0; character_name_iter < packet->char_payload[char_payload_iter].character_name_length; character_name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->char_payload[char_payload_iter].character_name[character_name_iter]);
-offset++;
-}
-
-} // char_payload
-endian_write_u32_little((uint8_t*)char_payload_length_ptr, (u32)((uptr)buffer + (uptr)offset - (uptr)char_payload_length_ptr - sizeof(u32)));
-
-} break;
-
-case Login_Packet_Kind_CharacterCreateReply:
-{
-printf("[*] Packing CharacterCreateReply...\n");
-Login_Packet_CharacterCreateReply* packet = static_cast<Login_Packet_CharacterCreateReply*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0x6);
-offset += sizeof(u8);
-
-// u32 status
-endian_write_u32_little(buffer + offset, packet->status);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// u64 character_id
-endian_write_u64_little(buffer + offset, packet->character_id);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-} break;
-
-case Login_Packet_Kind_CharacterLoginRequest:
-{
-printf("[*] Packing CharacterLoginRequest...\n");
-Login_Packet_CharacterLoginRequest* packet = static_cast<Login_Packet_CharacterLoginRequest*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0x7);
-offset += sizeof(u8);
-
-// u64 character_id
-endian_write_u64_little(buffer + offset, packet->character_id);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-// u32 server_id
-endian_write_u32_little(buffer + offset, packet->server_id);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 status
-endian_write_u32_little(buffer + offset, packet->status);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// stream payload2
-void* payload2_length_ptr = buffer + offset;
-offset += sizeof(u32);
-printf("-- STREAM_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->payload2_length, (uint64_t)packet->payload2_length, (double)packet->payload2_length);
-
-uint32_t will_pack_payload2 = packet->payload2_length == ~(u32)0 ? 0 : 1;
-for (uint32_t payload2_iter = 0; payload2_iter < will_pack_payload2; payload2_iter++)
-{
-// string locale
-endian_write_u32_little(buffer + offset, packet->payload2[payload2_iter].locale_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->payload2[payload2_iter].locale_length, (uint64_t)packet->payload2[payload2_iter].locale_length, (double)packet->payload2[payload2_iter].locale_length);
-for (uint32_t locale_iter = 0; locale_iter < packet->payload2[payload2_iter].locale_length; locale_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->payload2[payload2_iter].locale[locale_iter]);
-offset++;
-}
-
-// u32 locale_id
-endian_write_u32_little(buffer + offset, packet->payload2[payload2_iter].locale_id);
-offset += sizeof(u32);
-printf("-- locale_id               \t%lld\t%llxh\t%f\n", (i64)packet->payload2[payload2_iter].locale_id, (uint64_t)packet->payload2[payload2_iter].locale_id, (double)packet->payload2[payload2_iter].locale_id);
-
-// u32 preferred_gateway_id
-endian_write_u32_little(buffer + offset, packet->payload2[payload2_iter].preferred_gateway_id);
-offset += sizeof(u32);
-printf("-- preferred_gateway_id    \t%lld\t%llxh\t%f\n", (i64)packet->payload2[payload2_iter].preferred_gateway_id, (uint64_t)packet->payload2[payload2_iter].preferred_gateway_id, (double)packet->payload2[payload2_iter].preferred_gateway_id);
-
-} // payload2
-endian_write_u32_little((uint8_t*)payload2_length_ptr, (u32)((uptr)buffer + (uptr)offset - (uptr)payload2_length_ptr - sizeof(u32)));
-
-} break;
-
-case Login_Packet_Kind_CharacterLoginReply:
-{
-printf("[*] Packing CharacterLoginReply...\n");
-Login_Packet_CharacterLoginReply* packet = static_cast<Login_Packet_CharacterLoginReply*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0x8);
-offset += sizeof(u8);
-
-// u64 character_id
-endian_write_u64_little(buffer + offset, packet->character_id);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-// u32 server_id
-endian_write_u32_little(buffer + offset, packet->server_id);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 last_login
-endian_write_u32_little(buffer + offset, packet->last_login);
-offset += sizeof(u32);
-printf("-- last_login              \t%lld\t%llxh\t%f\n", (i64)packet->last_login, (uint64_t)packet->last_login, (double)packet->last_login);
-
-// u32 status
-endian_write_u32_little(buffer + offset, packet->status);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// stream login_payload
-void* login_payload_length_ptr = buffer + offset;
-offset += sizeof(u32);
-printf("-- STREAM_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->login_payload_length, (uint64_t)packet->login_payload_length, (double)packet->login_payload_length);
-
-uint32_t will_pack_login_payload = packet->login_payload_length == ~(u32)0 ? 0 : 1;
-for (uint32_t login_payload_iter = 0; login_payload_iter < will_pack_login_payload; login_payload_iter++)
-{
-// string server_address
-endian_write_u32_little(buffer + offset, packet->login_payload[login_payload_iter].server_address_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].server_address_length, (uint64_t)packet->login_payload[login_payload_iter].server_address_length, (double)packet->login_payload[login_payload_iter].server_address_length);
-for (uint32_t server_address_iter = 0; server_address_iter < packet->login_payload[login_payload_iter].server_address_length; server_address_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->login_payload[login_payload_iter].server_address[server_address_iter]);
-offset++;
-}
-
-// string server_ticket
-endian_write_u32_little(buffer + offset, packet->login_payload[login_payload_iter].server_ticket_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].server_ticket_length, (uint64_t)packet->login_payload[login_payload_iter].server_ticket_length, (double)packet->login_payload[login_payload_iter].server_ticket_length);
-for (uint32_t server_ticket_iter = 0; server_ticket_iter < packet->login_payload[login_payload_iter].server_ticket_length; server_ticket_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->login_payload[login_payload_iter].server_ticket[server_ticket_iter]);
-offset++;
-}
-
-// bytes encryption_key
-endian_write_u32_little(buffer + offset, packet->login_payload[login_payload_iter].encryption_key_length);
-offset += sizeof(u32);
-printf("-- BYTES_LENGTH            \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].encryption_key_length, (uint64_t)packet->login_payload[login_payload_iter].encryption_key_length, (double)packet->login_payload[login_payload_iter].encryption_key_length);
-for (uint32_t encryption_key_iter = 0; encryption_key_iter < packet->login_payload[login_payload_iter].encryption_key_length; encryption_key_iter++)
-{
-endian_write_u8_little(buffer + offset, packet->login_payload[login_payload_iter].encryption_key[encryption_key_iter]);
-offset++;
-}
-
-// u32 soe_protocol_version
-endian_write_u32_little(buffer + offset, packet->login_payload[login_payload_iter].soe_protocol_version);
-offset += sizeof(u32);
-printf("-- soe_protocol_version    \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].soe_protocol_version, (uint64_t)packet->login_payload[login_payload_iter].soe_protocol_version, (double)packet->login_payload[login_payload_iter].soe_protocol_version);
-
-// u64 character_id
-endian_write_u64_little(buffer + offset, packet->login_payload[login_payload_iter].character_id);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].character_id, (uint64_t)packet->login_payload[login_payload_iter].character_id, (double)packet->login_payload[login_payload_iter].character_id);
-
-// u64 unk_u64
-endian_write_u64_little(buffer + offset, packet->login_payload[login_payload_iter].unk_u64);
-offset += sizeof(u64);
-printf("-- unk_u64                 \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].unk_u64, (uint64_t)packet->login_payload[login_payload_iter].unk_u64, (double)packet->login_payload[login_payload_iter].unk_u64);
-
-// string station_name
-endian_write_u32_little(buffer + offset, packet->login_payload[login_payload_iter].station_name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].station_name_length, (uint64_t)packet->login_payload[login_payload_iter].station_name_length, (double)packet->login_payload[login_payload_iter].station_name_length);
-for (uint32_t station_name_iter = 0; station_name_iter < packet->login_payload[login_payload_iter].station_name_length; station_name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->login_payload[login_payload_iter].station_name[station_name_iter]);
-offset++;
-}
-
-// string character_name
-endian_write_u32_little(buffer + offset, packet->login_payload[login_payload_iter].character_name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].character_name_length, (uint64_t)packet->login_payload[login_payload_iter].character_name_length, (double)packet->login_payload[login_payload_iter].character_name_length);
-for (uint32_t character_name_iter = 0; character_name_iter < packet->login_payload[login_payload_iter].character_name_length; character_name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->login_payload[login_payload_iter].character_name[character_name_iter]);
-offset++;
-}
-
-// string unk_str
-endian_write_u32_little(buffer + offset, packet->login_payload[login_payload_iter].unk_str_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].unk_str_length, (uint64_t)packet->login_payload[login_payload_iter].unk_str_length, (double)packet->login_payload[login_payload_iter].unk_str_length);
-for (uint32_t unk_str_iter = 0; unk_str_iter < packet->login_payload[login_payload_iter].unk_str_length; unk_str_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->login_payload[login_payload_iter].unk_str[unk_str_iter]);
-offset++;
-}
-
-// u64 server_feature_bit
-endian_write_u64_little(buffer + offset, packet->login_payload[login_payload_iter].server_feature_bit);
-offset += sizeof(u64);
-printf("-- server_feature_bit      \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].server_feature_bit, (uint64_t)packet->login_payload[login_payload_iter].server_feature_bit, (double)packet->login_payload[login_payload_iter].server_feature_bit);
-
-} // login_payload
-endian_write_u32_little((uint8_t*)login_payload_length_ptr, (u32)((uptr)buffer + (uptr)offset - (uptr)login_payload_length_ptr - sizeof(u32)));
-
-} break;
-
-case Login_Packet_Kind_CharacterDeleteRequest:
-{
-printf("[*] Packing CharacterDeleteRequest...\n");
-Login_Packet_CharacterDeleteRequest* packet = static_cast<Login_Packet_CharacterDeleteRequest*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0x9);
-offset += sizeof(u8);
-
-// u64 character_id
-endian_write_u64_little(buffer + offset, packet->character_id);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-} break;
-
-case Login_Packet_Kind_TunnelAppPacketClientToServer:
-{
-printf("[*] Packing TunnelAppPacketClientToServer...\n");
-Login_Packet_TunnelAppPacketClientToServer* packet = static_cast<Login_Packet_TunnelAppPacketClientToServer*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0x10);
-offset += sizeof(u8);
-
-// u32 server_id
-endian_write_u32_little(buffer + offset, packet->server_id);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 unk1
-endian_write_u32_little(buffer + offset, packet->unk1);
-offset += sizeof(u32);
-printf("-- unk1                    \t%lld\t%llxh\t%f\n", (i64)packet->unk1, (uint64_t)packet->unk1, (double)packet->unk1);
-
-// stream data_client
-void* data_client_length_ptr = buffer + offset;
-offset += sizeof(u32);
-printf("-- STREAM_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->data_client_length, (uint64_t)packet->data_client_length, (double)packet->data_client_length);
-
-uint32_t will_pack_data_client = packet->data_client_length == ~(u32)0 ? 0 : 1;
-for (uint32_t data_client_iter = 0; data_client_iter < will_pack_data_client; data_client_iter++)
-{
-// b8 tunnel_op_code
-endian_write_b8_little(buffer + offset, packet->data_client[data_client_iter].tunnel_op_code);
-offset += sizeof(b8);
-printf("-- tunnel_op_code          \t%lld\t%llxh\t%f\n", (i64)packet->data_client[data_client_iter].tunnel_op_code, (uint64_t)packet->data_client[data_client_iter].tunnel_op_code, (double)packet->data_client[data_client_iter].tunnel_op_code);
-
-// b8 sub_op_code
-endian_write_b8_little(buffer + offset, packet->data_client[data_client_iter].sub_op_code);
-offset += sizeof(b8);
-printf("-- sub_op_code             \t%lld\t%llxh\t%f\n", (i64)packet->data_client[data_client_iter].sub_op_code, (uint64_t)packet->data_client[data_client_iter].sub_op_code, (double)packet->data_client[data_client_iter].sub_op_code);
-
-// string character_name
-endian_write_u32_little(buffer + offset, packet->data_client[data_client_iter].character_name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->data_client[data_client_iter].character_name_length, (uint64_t)packet->data_client[data_client_iter].character_name_length, (double)packet->data_client[data_client_iter].character_name_length);
-for (uint32_t character_name_iter = 0; character_name_iter < packet->data_client[data_client_iter].character_name_length; character_name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->data_client[data_client_iter].character_name[character_name_iter]);
-offset++;
-}
-
-} // data_client
-endian_write_u32_little((uint8_t*)data_client_length_ptr, (u32)((uptr)buffer + (uptr)offset - (uptr)data_client_length_ptr - sizeof(u32)));
-
-} break;
-
-case Login_Packet_Kind_TunnelAppPacketServerToClient:
-{
-printf("[*] Packing TunnelAppPacketServerToClient...\n");
-Login_Packet_TunnelAppPacketServerToClient* packet = static_cast<Login_Packet_TunnelAppPacketServerToClient*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0x11);
-offset += sizeof(u8);
-
-// u32 server_id
-endian_write_u32_little(buffer + offset, packet->server_id);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 unk1
-endian_write_u32_little(buffer + offset, packet->unk1);
-offset += sizeof(u32);
-printf("-- unk1                    \t%lld\t%llxh\t%f\n", (i64)packet->unk1, (uint64_t)packet->unk1, (double)packet->unk1);
-
-// stream data_server
-void* data_server_length_ptr = buffer + offset;
-offset += sizeof(u32);
-printf("-- STREAM_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->data_server_length, (uint64_t)packet->data_server_length, (double)packet->data_server_length);
-
-uint32_t will_pack_data_server = packet->data_server_length == ~(u32)0 ? 0 : 1;
-for (uint32_t data_server_iter = 0; data_server_iter < will_pack_data_server; data_server_iter++)
-{
-// u8 tunnel_op_code
-endian_write_u8_little(buffer + offset, packet->data_server[data_server_iter].tunnel_op_code);
-offset += sizeof(u8);
-printf("-- tunnel_op_code          \t%lld\t%llxh\t%f\n", (i64)packet->data_server[data_server_iter].tunnel_op_code, (uint64_t)packet->data_server[data_server_iter].tunnel_op_code, (double)packet->data_server[data_server_iter].tunnel_op_code);
-
-// u8 sub_op_code
-endian_write_u8_little(buffer + offset, packet->data_server[data_server_iter].sub_op_code);
-offset += sizeof(u8);
-printf("-- sub_op_code             \t%lld\t%llxh\t%f\n", (i64)packet->data_server[data_server_iter].sub_op_code, (uint64_t)packet->data_server[data_server_iter].sub_op_code, (double)packet->data_server[data_server_iter].sub_op_code);
-
-// string character_name
-endian_write_u32_little(buffer + offset, packet->data_server[data_server_iter].character_name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->data_server[data_server_iter].character_name_length, (uint64_t)packet->data_server[data_server_iter].character_name_length, (double)packet->data_server[data_server_iter].character_name_length);
-for (uint32_t character_name_iter = 0; character_name_iter < packet->data_server[data_server_iter].character_name_length; character_name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->data_server[data_server_iter].character_name[character_name_iter]);
-offset++;
-}
-
-// string character_name2
-endian_write_u32_little(buffer + offset, packet->data_server[data_server_iter].character_name2_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->data_server[data_server_iter].character_name2_length, (uint64_t)packet->data_server[data_server_iter].character_name2_length, (double)packet->data_server[data_server_iter].character_name2_length);
-for (uint32_t character_name2_iter = 0; character_name2_iter < packet->data_server[data_server_iter].character_name2_length; character_name2_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->data_server[data_server_iter].character_name2[character_name2_iter]);
-offset++;
-}
-
-// u32 status
-endian_write_u32_little(buffer + offset, packet->data_server[data_server_iter].status);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->data_server[data_server_iter].status, (uint64_t)packet->data_server[data_server_iter].status, (double)packet->data_server[data_server_iter].status);
-
-} // data_server
-endian_write_u32_little((uint8_t*)data_server_length_ptr, (u32)((uptr)buffer + (uptr)offset - (uptr)data_server_length_ptr - sizeof(u32)));
-
-} break;
-
-case Login_Packet_Kind_CharacterTransferRequest:
-{
-printf("[*] Packing CharacterTransferRequest...\n");
-endian_write_u8_little(buffer + offset, 0x12);
-offset += sizeof(u8);
-
-} break;
-
-case Login_Packet_Kind_CharacterTransferReply:
-{
-printf("[*] Packing CharacterTransferReply...\n");
-endian_write_u8_little(buffer + offset, 0x13);
-offset += sizeof(u8);
-
-} break;
-
-case Login_Packet_Kind_CharacterDeleteReply:
-{
-printf("[*] Packing CharacterDeleteReply...\n");
-Login_Packet_CharacterDeleteReply* packet = static_cast<Login_Packet_CharacterDeleteReply*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0xa);
-offset += sizeof(u8);
-
-// u64 character_id
-endian_write_u64_little(buffer + offset, packet->character_id);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-// u32 status
-endian_write_u32_little(buffer + offset, packet->status);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// bytes payload3
-endian_write_u32_little(buffer + offset, packet->payload3_length);
-offset += sizeof(u32);
-printf("-- BYTES_LENGTH            \t%lld\t%llxh\t%f\n", (i64)packet->payload3_length, (uint64_t)packet->payload3_length, (double)packet->payload3_length);
-for (uint32_t payload3_iter = 0; payload3_iter < packet->payload3_length; payload3_iter++)
-{
-endian_write_u8_little(buffer + offset, packet->payload3[payload3_iter]);
-offset++;
-}
-
-} break;
-
-case Login_Packet_Kind_CharacterSelectInfoRequest:
-{
-printf("[*] Packing CharacterSelectInfoRequest...\n");
-endian_write_u8_little(buffer + offset, 0xb);
-offset += sizeof(u8);
-
-} break;
-
-case Login_Packet_Kind_CharacterSelectInfoReply:
-{
-printf("[*] Packing CharacterSelectInfoReply...\n");
-Login_Packet_CharacterSelectInfoReply* packet = static_cast<Login_Packet_CharacterSelectInfoReply*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0xc);
-offset += sizeof(u8);
-
-// u32 character_status
-endian_write_u32_little(buffer + offset, packet->character_status);
-offset += sizeof(u32);
-printf("-- character_status        \t%lld\t%llxh\t%f\n", (i64)packet->character_status, (uint64_t)packet->character_status, (double)packet->character_status);
-
-// b8 can_bypass_server_lock
-endian_write_b8_little(buffer + offset, packet->can_bypass_server_lock);
-offset += sizeof(b8);
-printf("-- can_bypass_server_lock  \t%lld\t%llxh\t%f\n", (i64)packet->can_bypass_server_lock, (uint64_t)packet->can_bypass_server_lock, (double)packet->can_bypass_server_lock);
-
-// list stats_item_def_2
-endian_write_u32_little(buffer + offset, packet->stats_item_def_2_count);
-offset += sizeof(u32);
-printf("-- LIST_COUNT              \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2_count, (uint64_t)packet->stats_item_def_2_count, (double)packet->stats_item_def_2_count);
-
-for (uint32_t stats_item_def_2_iter = 0; stats_item_def_2_iter < packet->stats_item_def_2_count; stats_item_def_2_iter++)
-{
-// u32 unk_dword_9
-endian_write_u32_little(buffer + offset, packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_9);
-offset += sizeof(u32);
-printf("-- unk_dword_9             \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_9, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_9, (double)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_9);
-
-// u32 stat_id
-endian_write_u32_little(buffer + offset, packet->stats_item_def_2[stats_item_def_2_iter].stat_id);
-offset += sizeof(u32);
-printf("-- stat_id                 \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].stat_id, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].stat_id, (double)packet->stats_item_def_2[stats_item_def_2_iter].stat_id);
-
-endian_write_u8_little(buffer + offset, packet->stats_item_def_2[stats_item_def_2_iter].variabletype8_case);
-offset += sizeof(u8);
-printf("-- SWITCH_CASE             \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8_case, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8_case, (double)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8_case);
-
-switch(packet->stats_item_def_2[stats_item_def_2_iter].variabletype8_case)
-{
-case 0:
-{
-// u32 base
-endian_write_u32_little(buffer + offset, packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base);
-offset += sizeof(u32);
-printf("-- base                    \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base, (double)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base);
-
-// u32 modifier
-endian_write_u32_little(buffer + offset, packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier);
-offset += sizeof(u32);
-printf("-- modifier                \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier, (double)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier);
-
-} break;
-case 1:
-{
-// f32 base
-endian_write_f32_little(buffer + offset, packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base);
-offset += sizeof(f32);
-printf("-- base                    \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base, (double)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base);
-
-// f32 modifier
-endian_write_f32_little(buffer + offset, packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier);
-offset += sizeof(f32);
-printf("-- modifier                \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier, (double)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier);
-
-} break;
+  uptr size;
+  u32 value;
 };
-// u32 unk_dword_10
-endian_write_u32_little(buffer + offset, packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_10);
-offset += sizeof(u32);
-printf("-- unk_dword_10            \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_10, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_10, (double)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_10);
 
-} // stats_item_def_2
-
-// list itemDefinitions
-endian_write_u32_little(buffer + offset, packet->itemDefinitions_count);
-offset += sizeof(u32);
-printf("-- LIST_COUNT              \t%lld\t%llxh\t%f\n", (i64)packet->itemDefinitions_count, (uint64_t)packet->itemDefinitions_count, (double)packet->itemDefinitions_count);
-
-for (uint32_t itemDefinitions_iter = 0; itemDefinitions_iter < packet->itemDefinitions_count; itemDefinitions_iter++)
+Read_Uint2b_Result read_uint2b_little_at(void* memory)
 {
-// u32 ID
-endian_write_u32_little(buffer + offset, packet->itemDefinitions[itemDefinitions_iter].ID);
-offset += sizeof(u32);
-printf("-- ID                      \t%lld\t%llxh\t%f\n", (i64)packet->itemDefinitions[itemDefinitions_iter].ID, (uint64_t)packet->itemDefinitions[itemDefinitions_iter].ID, (double)packet->itemDefinitions[itemDefinitions_iter].ID);
+  u32 raw = read_u8_at(memory);
+  uptr size = raw & 3;
+  for (uptr i = 0; i < size; ++i)
+  {
+    raw |= read_u8_at((void*)((uptr)memory + i + 1)) << ((i + 1) * 8);
+  }
+  raw >>= 2;
 
-} // itemDefinitions
+  Read_Uint2b_Result result{};
+  result.size = size + 1;
+  result.value = raw;
 
-// list item_defs
-endian_write_u32_little(buffer + offset, packet->item_defs_count);
-offset += sizeof(u32);
-printf("-- LIST_COUNT              \t%lld\t%llxh\t%f\n", (i64)packet->item_defs_count, (uint64_t)packet->item_defs_count, (double)packet->item_defs_count);
-
-for (uint32_t item_defs_iter = 0; item_defs_iter < packet->item_defs_count; item_defs_iter++)
-{
-// u32 defs_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].defs_id);
-offset += sizeof(u32);
-printf("-- defs_id                 \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].defs_id, (uint64_t)packet->item_defs[item_defs_iter].defs_id, (double)packet->item_defs[item_defs_iter].defs_id);
-
-// u8 bitflags1
-endian_write_u8_little(buffer + offset, packet->item_defs[item_defs_iter].bitflags1);
-offset += sizeof(u8);
-printf("-- bitflags1               \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].bitflags1, (uint64_t)packet->item_defs[item_defs_iter].bitflags1, (double)packet->item_defs[item_defs_iter].bitflags1);
-
-// u8 bitflags2
-endian_write_u8_little(buffer + offset, packet->item_defs[item_defs_iter].bitflags2);
-offset += sizeof(u8);
-printf("-- bitflags2               \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].bitflags2, (uint64_t)packet->item_defs[item_defs_iter].bitflags2, (double)packet->item_defs[item_defs_iter].bitflags2);
-
-// u32 name_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].name_id);
-offset += sizeof(u32);
-printf("-- name_id                 \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].name_id, (uint64_t)packet->item_defs[item_defs_iter].name_id, (double)packet->item_defs[item_defs_iter].name_id);
-
-// u32 description_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].description_id);
-offset += sizeof(u32);
-printf("-- description_id          \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].description_id, (uint64_t)packet->item_defs[item_defs_iter].description_id, (double)packet->item_defs[item_defs_iter].description_id);
-
-// u32 content_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].content_id);
-offset += sizeof(u32);
-printf("-- content_id              \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].content_id, (uint64_t)packet->item_defs[item_defs_iter].content_id, (double)packet->item_defs[item_defs_iter].content_id);
-
-// u32 image_set_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].image_set_id);
-offset += sizeof(u32);
-printf("-- image_set_id            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].image_set_id, (uint64_t)packet->item_defs[item_defs_iter].image_set_id, (double)packet->item_defs[item_defs_iter].image_set_id);
-
-// u32 tint_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].tint_id);
-offset += sizeof(u32);
-printf("-- tint_id                 \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].tint_id, (uint64_t)packet->item_defs[item_defs_iter].tint_id, (double)packet->item_defs[item_defs_iter].tint_id);
-
-// u32 hud_image_set_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].hud_image_set_id);
-offset += sizeof(u32);
-printf("-- hud_image_set_id        \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].hud_image_set_id, (uint64_t)packet->item_defs[item_defs_iter].hud_image_set_id, (double)packet->item_defs[item_defs_iter].hud_image_set_id);
-
-// u32 unk_dword_1
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].unk_dword_1);
-offset += sizeof(u32);
-printf("-- unk_dword_1             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_1, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_1, (double)packet->item_defs[item_defs_iter].unk_dword_1);
-
-// u32 unk_dword_2
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].unk_dword_2);
-offset += sizeof(u32);
-printf("-- unk_dword_2             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_2, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_2, (double)packet->item_defs[item_defs_iter].unk_dword_2);
-
-// u32 cost
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].cost);
-offset += sizeof(u32);
-printf("-- cost                    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].cost, (uint64_t)packet->item_defs[item_defs_iter].cost, (double)packet->item_defs[item_defs_iter].cost);
-
-// u32 item_class
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].item_class);
-offset += sizeof(u32);
-printf("-- item_class              \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].item_class, (uint64_t)packet->item_defs[item_defs_iter].item_class, (double)packet->item_defs[item_defs_iter].item_class);
-
-// u32 profile_override
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].profile_override);
-offset += sizeof(u32);
-printf("-- profile_override        \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].profile_override, (uint64_t)packet->item_defs[item_defs_iter].profile_override, (double)packet->item_defs[item_defs_iter].profile_override);
-
-// string model_name
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].model_name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].model_name_length, (uint64_t)packet->item_defs[item_defs_iter].model_name_length, (double)packet->item_defs[item_defs_iter].model_name_length);
-for (uint32_t model_name_iter = 0; model_name_iter < packet->item_defs[item_defs_iter].model_name_length; model_name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->item_defs[item_defs_iter].model_name[model_name_iter]);
-offset++;
+  return result;
 }
 
-// string texture_alias
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].texture_alias_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].texture_alias_length, (uint64_t)packet->item_defs[item_defs_iter].texture_alias_length, (double)packet->item_defs[item_defs_iter].texture_alias_length);
-for (uint32_t texture_alias_iter = 0; texture_alias_iter < packet->item_defs[item_defs_iter].texture_alias_length; texture_alias_iter++)
+uptr write_uint2b_little_at(void* memory, u32 value)
 {
-endian_write_i8_little(buffer + offset, packet->item_defs[item_defs_iter].texture_alias[texture_alias_iter]);
-offset++;
+  value <<= 2;
+  uptr size = 0;
+  if (value > 0xffffff)
+  {
+    size = 3;
+  }
+  else if (value > 0xffff)
+  {
+    size = 2;
+  }
+  else if (value > 0xff)
+  {
+    size = 1;
+  }
+  value |= size;
+
+  write_u32_little_at(memory, value);
+  return size + 1;
 }
 
-// u32 gender_usage
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].gender_usage);
-offset += sizeof(u32);
-printf("-- gender_usage            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].gender_usage, (uint64_t)packet->item_defs[item_defs_iter].gender_usage, (double)packet->item_defs[item_defs_iter].gender_usage);
-
-// u32 item_type
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].item_type);
-offset += sizeof(u32);
-printf("-- item_type               \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].item_type, (uint64_t)packet->item_defs[item_defs_iter].item_type, (double)packet->item_defs[item_defs_iter].item_type);
-
-// u32 category_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].category_id);
-offset += sizeof(u32);
-printf("-- category_id             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].category_id, (uint64_t)packet->item_defs[item_defs_iter].category_id, (double)packet->item_defs[item_defs_iter].category_id);
-
-// u32 weapon_trail_effect_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].weapon_trail_effect_id);
-offset += sizeof(u32);
-printf("-- weapon_trail_effect_id  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].weapon_trail_effect_id, (uint64_t)packet->item_defs[item_defs_iter].weapon_trail_effect_id, (double)packet->item_defs[item_defs_iter].weapon_trail_effect_id);
-
-// u32 composite_effect_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].composite_effect_id);
-offset += sizeof(u32);
-printf("-- composite_effect_id     \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].composite_effect_id, (uint64_t)packet->item_defs[item_defs_iter].composite_effect_id, (double)packet->item_defs[item_defs_iter].composite_effect_id);
-
-// u32 power_rating
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].power_rating);
-offset += sizeof(u32);
-printf("-- power_rating            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].power_rating, (uint64_t)packet->item_defs[item_defs_iter].power_rating, (double)packet->item_defs[item_defs_iter].power_rating);
-
-// u32 min_profile_rank
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].min_profile_rank);
-offset += sizeof(u32);
-printf("-- min_profile_rank        \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].min_profile_rank, (uint64_t)packet->item_defs[item_defs_iter].min_profile_rank, (double)packet->item_defs[item_defs_iter].min_profile_rank);
-
-// u32 rarity
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].rarity);
-offset += sizeof(u32);
-printf("-- rarity                  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].rarity, (uint64_t)packet->item_defs[item_defs_iter].rarity, (double)packet->item_defs[item_defs_iter].rarity);
-
-// u32 activatable_ability_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].activatable_ability_id);
-offset += sizeof(u32);
-printf("-- activatable_ability_id  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].activatable_ability_id, (uint64_t)packet->item_defs[item_defs_iter].activatable_ability_id, (double)packet->item_defs[item_defs_iter].activatable_ability_id);
-
-// u32 activatable_ability_set_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].activatable_ability_set_id);
-offset += sizeof(u32);
-printf("-- activatable_ability_set_id\t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].activatable_ability_set_id, (uint64_t)packet->item_defs[item_defs_iter].activatable_ability_set_id, (double)packet->item_defs[item_defs_iter].activatable_ability_set_id);
-
-// u32 passive_ability_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].passive_ability_id);
-offset += sizeof(u32);
-printf("-- passive_ability_id      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].passive_ability_id, (uint64_t)packet->item_defs[item_defs_iter].passive_ability_id, (double)packet->item_defs[item_defs_iter].passive_ability_id);
-
-// u32 passive_ability_set_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].passive_ability_set_id);
-offset += sizeof(u32);
-printf("-- passive_ability_set_id  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].passive_ability_set_id, (uint64_t)packet->item_defs[item_defs_iter].passive_ability_set_id, (double)packet->item_defs[item_defs_iter].passive_ability_set_id);
-
-// u32 max_stack_size
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].max_stack_size);
-offset += sizeof(u32);
-printf("-- max_stack_size          \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].max_stack_size, (uint64_t)packet->item_defs[item_defs_iter].max_stack_size, (double)packet->item_defs[item_defs_iter].max_stack_size);
-
-// u32 min_stack_size
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].min_stack_size);
-offset += sizeof(u32);
-printf("-- min_stack_size          \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].min_stack_size, (uint64_t)packet->item_defs[item_defs_iter].min_stack_size, (double)packet->item_defs[item_defs_iter].min_stack_size);
-
-// string tint_alias
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].tint_alias_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].tint_alias_length, (uint64_t)packet->item_defs[item_defs_iter].tint_alias_length, (double)packet->item_defs[item_defs_iter].tint_alias_length);
-for (uint32_t tint_alias_iter = 0; tint_alias_iter < packet->item_defs[item_defs_iter].tint_alias_length; tint_alias_iter++)
+u32 read_uint2b_little(Stream* stream)
 {
-endian_write_i8_little(buffer + offset, packet->item_defs[item_defs_iter].tint_alias[tint_alias_iter]);
-offset++;
+  Read_Uint2b_Result result = read_uint2b_little_at(stream->buffer.data + stream->cursor);
+  stream->cursor += result.size;
+  return result.value;
 }
 
-// u32 tint_group_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].tint_group_id);
-offset += sizeof(u32);
-printf("-- tint_group_id           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].tint_group_id, (uint64_t)packet->item_defs[item_defs_iter].tint_group_id, (double)packet->item_defs[item_defs_iter].tint_group_id);
-
-// u32 member_discount
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].member_discount);
-offset += sizeof(u32);
-printf("-- member_discount         \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].member_discount, (uint64_t)packet->item_defs[item_defs_iter].member_discount, (double)packet->item_defs[item_defs_iter].member_discount);
-
-// u32 vip_rank_required
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].vip_rank_required);
-offset += sizeof(u32);
-printf("-- vip_rank_required       \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].vip_rank_required, (uint64_t)packet->item_defs[item_defs_iter].vip_rank_required, (double)packet->item_defs[item_defs_iter].vip_rank_required);
-
-// u32 race_set_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].race_set_id);
-offset += sizeof(u32);
-printf("-- race_set_id             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].race_set_id, (uint64_t)packet->item_defs[item_defs_iter].race_set_id, (double)packet->item_defs[item_defs_iter].race_set_id);
-
-// u32 ui_model_camera_id_1
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].ui_model_camera_id_1);
-offset += sizeof(u32);
-printf("-- ui_model_camera_id_1    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].ui_model_camera_id_1, (uint64_t)packet->item_defs[item_defs_iter].ui_model_camera_id_1, (double)packet->item_defs[item_defs_iter].ui_model_camera_id_1);
-
-// u32 equip_count_max
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].equip_count_max);
-offset += sizeof(u32);
-printf("-- equip_count_max         \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].equip_count_max, (uint64_t)packet->item_defs[item_defs_iter].equip_count_max, (double)packet->item_defs[item_defs_iter].equip_count_max);
-
-// i32 curreny_type
-endian_write_i32_little(buffer + offset, packet->item_defs[item_defs_iter].curreny_type);
-offset += sizeof(i32);
-printf("-- curreny_type            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].curreny_type, (uint64_t)packet->item_defs[item_defs_iter].curreny_type, (double)packet->item_defs[item_defs_iter].curreny_type);
-
-// u32 datasheet_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].datasheet_id);
-offset += sizeof(u32);
-printf("-- datasheet_id            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].datasheet_id, (uint64_t)packet->item_defs[item_defs_iter].datasheet_id, (double)packet->item_defs[item_defs_iter].datasheet_id);
-
-// u32 item_type_1
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].item_type_1);
-offset += sizeof(u32);
-printf("-- item_type_1             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].item_type_1, (uint64_t)packet->item_defs[item_defs_iter].item_type_1, (double)packet->item_defs[item_defs_iter].item_type_1);
-
-// u32 skill_set_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].skill_set_id);
-offset += sizeof(u32);
-printf("-- skill_set_id            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].skill_set_id, (uint64_t)packet->item_defs[item_defs_iter].skill_set_id, (double)packet->item_defs[item_defs_iter].skill_set_id);
-
-// string overlay_texture
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].overlay_texture_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].overlay_texture_length, (uint64_t)packet->item_defs[item_defs_iter].overlay_texture_length, (double)packet->item_defs[item_defs_iter].overlay_texture_length);
-for (uint32_t overlay_texture_iter = 0; overlay_texture_iter < packet->item_defs[item_defs_iter].overlay_texture_length; overlay_texture_iter++)
+void push_uint2b_little(Arena* arena, u32 value)
 {
-endian_write_i8_little(buffer + offset, packet->item_defs[item_defs_iter].overlay_texture[overlay_texture_iter]);
-offset++;
+  void* at = arena_push_size(arena, 4);
+  uptr bytes_written = write_uint2b_little_at(at, value);
+  arena->cursor -= 4 - bytes_written;
 }
 
-// string decal_slot
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].decal_slot_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].decal_slot_length, (uint64_t)packet->item_defs[item_defs_iter].decal_slot_length, (double)packet->item_defs[item_defs_iter].decal_slot_length);
-for (uint32_t decal_slot_iter = 0; decal_slot_iter < packet->item_defs[item_defs_iter].decal_slot_length; decal_slot_iter++)
+#define LOGIN_PACKET_TABLE(LOGIN_X) \
+	LOGIN_X(Unhandled), \
+  LOGIN_X(LoginRequest), \
+  LOGIN_X(LoginReply), \
+  LOGIN_X(Logout), \
+  LOGIN_X(ForceDisconnect), \
+  LOGIN_X(CharacterCreateRequest), \
+  LOGIN_X(CharacterCreateReply), \
+  LOGIN_X(CharacterLoginRequest), \
+  LOGIN_X(CharacterLoginReply), \
+  LOGIN_X(CharacterDeleteRequest), \
+  LOGIN_X(TunnelAppPacketClientToServer), \
+  LOGIN_X(TunnelAppPacketServerToClient), \
+  LOGIN_X(CharacterTransferRequest), \
+  LOGIN_X(CharacterTransferReply), \
+  LOGIN_X(CharacterDeleteReply), \
+  LOGIN_X(CharacterSelectInfoRequest), \
+  LOGIN_X(CharacterSelectInfoReply), \
+  LOGIN_X(ServerListRequest), \
+  LOGIN_X(ServerListReply), \
+  LOGIN_X(ServerUpdate), \
+  LOGIN_X(_End)
+
+#define LOGIN_PACKET_KIND(kind) Login_Packet_Kind_##kind
+enum Login_Packet_Kind
 {
-endian_write_i8_little(buffer + offset, packet->item_defs[item_defs_iter].decal_slot[decal_slot_iter]);
-offset++;
-}
-
-// u32 overlay_adjustment
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].overlay_adjustment);
-offset += sizeof(u32);
-printf("-- overlay_adjustment      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].overlay_adjustment, (uint64_t)packet->item_defs[item_defs_iter].overlay_adjustment, (double)packet->item_defs[item_defs_iter].overlay_adjustment);
-
-// u32 trial_duration_sec
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].trial_duration_sec);
-offset += sizeof(u32);
-printf("-- trial_duration_sec      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].trial_duration_sec, (uint64_t)packet->item_defs[item_defs_iter].trial_duration_sec, (double)packet->item_defs[item_defs_iter].trial_duration_sec);
-
-// u32 next_trial_delay_sec
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].next_trial_delay_sec);
-offset += sizeof(u32);
-printf("-- next_trial_delay_sec    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].next_trial_delay_sec, (uint64_t)packet->item_defs[item_defs_iter].next_trial_delay_sec, (double)packet->item_defs[item_defs_iter].next_trial_delay_sec);
-
-// u32 client_use_requirement
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].client_use_requirement);
-offset += sizeof(u32);
-printf("-- client_use_requirement  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].client_use_requirement, (uint64_t)packet->item_defs[item_defs_iter].client_use_requirement, (double)packet->item_defs[item_defs_iter].client_use_requirement);
-
-// string override_appearance
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].override_appearance_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].override_appearance_length, (uint64_t)packet->item_defs[item_defs_iter].override_appearance_length, (double)packet->item_defs[item_defs_iter].override_appearance_length);
-for (uint32_t override_appearance_iter = 0; override_appearance_iter < packet->item_defs[item_defs_iter].override_appearance_length; override_appearance_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->item_defs[item_defs_iter].override_appearance[override_appearance_iter]);
-offset++;
-}
-
-// u32 override_camera_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].override_camera_id);
-offset += sizeof(u32);
-printf("-- override_camera_id      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].override_camera_id, (uint64_t)packet->item_defs[item_defs_iter].override_camera_id, (double)packet->item_defs[item_defs_iter].override_camera_id);
-
-// u32 unk_dword_3
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].unk_dword_3);
-offset += sizeof(u32);
-printf("-- unk_dword_3             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_3, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_3, (double)packet->item_defs[item_defs_iter].unk_dword_3);
-
-// u32 unk_dword_4
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].unk_dword_4);
-offset += sizeof(u32);
-printf("-- unk_dword_4             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_4, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_4, (double)packet->item_defs[item_defs_iter].unk_dword_4);
-
-// u32 unk_dword_5
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].unk_dword_5);
-offset += sizeof(u32);
-printf("-- unk_dword_5             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_5, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_5, (double)packet->item_defs[item_defs_iter].unk_dword_5);
-
-// u32 bulk
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].bulk);
-offset += sizeof(u32);
-printf("-- bulk                    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].bulk, (uint64_t)packet->item_defs[item_defs_iter].bulk, (double)packet->item_defs[item_defs_iter].bulk);
-
-// u32 active_equip_slot_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].active_equip_slot_id);
-offset += sizeof(u32);
-printf("-- active_equip_slot_id    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].active_equip_slot_id, (uint64_t)packet->item_defs[item_defs_iter].active_equip_slot_id, (double)packet->item_defs[item_defs_iter].active_equip_slot_id);
-
-// u32 passive_equip_slot_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].passive_equip_slot_id);
-offset += sizeof(u32);
-printf("-- passive_equip_slot_id   \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].passive_equip_slot_id, (uint64_t)packet->item_defs[item_defs_iter].passive_equip_slot_id, (double)packet->item_defs[item_defs_iter].passive_equip_slot_id);
-
-// u32 passive_equip_slot_group_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].passive_equip_slot_group_id);
-offset += sizeof(u32);
-printf("-- passive_equip_slot_group_id\t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].passive_equip_slot_group_id, (uint64_t)packet->item_defs[item_defs_iter].passive_equip_slot_group_id, (double)packet->item_defs[item_defs_iter].passive_equip_slot_group_id);
-
-// u32 unk_dword_6
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].unk_dword_6);
-offset += sizeof(u32);
-printf("-- unk_dword_6             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_6, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_6, (double)packet->item_defs[item_defs_iter].unk_dword_6);
-
-// u32 grinder_reward_set_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].grinder_reward_set_id);
-offset += sizeof(u32);
-printf("-- grinder_reward_set_id   \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].grinder_reward_set_id, (uint64_t)packet->item_defs[item_defs_iter].grinder_reward_set_id, (double)packet->item_defs[item_defs_iter].grinder_reward_set_id);
-
-// u32 build_bar_group_id
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].build_bar_group_id);
-offset += sizeof(u32);
-printf("-- build_bar_group_id      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].build_bar_group_id, (uint64_t)packet->item_defs[item_defs_iter].build_bar_group_id, (double)packet->item_defs[item_defs_iter].build_bar_group_id);
-
-// string unk_string_1
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].unk_string_1_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_string_1_length, (uint64_t)packet->item_defs[item_defs_iter].unk_string_1_length, (double)packet->item_defs[item_defs_iter].unk_string_1_length);
-for (uint32_t unk_string_1_iter = 0; unk_string_1_iter < packet->item_defs[item_defs_iter].unk_string_1_length; unk_string_1_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->item_defs[item_defs_iter].unk_string_1[unk_string_1_iter]);
-offset++;
-}
-
-// b8 unk_bool_1
-endian_write_b8_little(buffer + offset, packet->item_defs[item_defs_iter].unk_bool_1);
-offset += sizeof(b8);
-printf("-- unk_bool_1              \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_bool_1, (uint64_t)packet->item_defs[item_defs_iter].unk_bool_1, (double)packet->item_defs[item_defs_iter].unk_bool_1);
-
-// b8 is_armor
-endian_write_b8_little(buffer + offset, packet->item_defs[item_defs_iter].is_armor);
-offset += sizeof(b8);
-printf("-- is_armor                \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].is_armor, (uint64_t)packet->item_defs[item_defs_iter].is_armor, (double)packet->item_defs[item_defs_iter].is_armor);
-
-// u32 unk_dword_7
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].unk_dword_7);
-offset += sizeof(u32);
-printf("-- unk_dword_7             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_7, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_7, (double)packet->item_defs[item_defs_iter].unk_dword_7);
-
-// u32 param1
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].param1);
-offset += sizeof(u32);
-printf("-- param1                  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].param1, (uint64_t)packet->item_defs[item_defs_iter].param1, (double)packet->item_defs[item_defs_iter].param1);
-
-// u32 param2
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].param2);
-offset += sizeof(u32);
-printf("-- param2                  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].param2, (uint64_t)packet->item_defs[item_defs_iter].param2, (double)packet->item_defs[item_defs_iter].param2);
-
-// u32 param3
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].param3);
-offset += sizeof(u32);
-printf("-- param3                  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].param3, (uint64_t)packet->item_defs[item_defs_iter].param3, (double)packet->item_defs[item_defs_iter].param3);
-
-// string string_param1
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].string_param1_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].string_param1_length, (uint64_t)packet->item_defs[item_defs_iter].string_param1_length, (double)packet->item_defs[item_defs_iter].string_param1_length);
-for (uint32_t string_param1_iter = 0; string_param1_iter < packet->item_defs[item_defs_iter].string_param1_length; string_param1_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->item_defs[item_defs_iter].string_param1[string_param1_iter]);
-offset++;
-}
-
-// u32 ui_model_camera_id_2
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].ui_model_camera_id_2);
-offset += sizeof(u32);
-printf("-- ui_model_camera_id_2    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].ui_model_camera_id_2, (uint64_t)packet->item_defs[item_defs_iter].ui_model_camera_id_2, (double)packet->item_defs[item_defs_iter].ui_model_camera_id_2);
-
-// u32 unk_dword_8
-endian_write_u32_little(buffer + offset, packet->item_defs[item_defs_iter].unk_dword_8);
-offset += sizeof(u32);
-printf("-- unk_dword_8             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_8, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_8, (double)packet->item_defs[item_defs_iter].unk_dword_8);
-
-// i32 scrap_value_override
-endian_write_i32_little(buffer + offset, packet->item_defs[item_defs_iter].scrap_value_override);
-offset += sizeof(i32);
-printf("-- scrap_value_override    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].scrap_value_override, (uint64_t)packet->item_defs[item_defs_iter].scrap_value_override, (double)packet->item_defs[item_defs_iter].scrap_value_override);
-
-} // item_defs
-
-// list loadoutSlots
-endian_write_u32_little(buffer + offset, packet->loadoutSlots_count);
-offset += sizeof(u32);
-printf("-- LIST_COUNT              \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots_count, (uint64_t)packet->loadoutSlots_count, (double)packet->loadoutSlots_count);
-
-for (uint32_t loadoutSlots_iter = 0; loadoutSlots_iter < packet->loadoutSlots_count; loadoutSlots_iter++)
-{
-// u32 hotbarSlotId
-endian_write_u32_little(buffer + offset, packet->loadoutSlots[loadoutSlots_iter].hotbarSlotId);
-offset += sizeof(u32);
-printf("-- hotbarSlotId            \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].hotbarSlotId, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].hotbarSlotId, (double)packet->loadoutSlots[loadoutSlots_iter].hotbarSlotId);
-
-// u32 loadoutId
-endian_write_u32_little(buffer + offset, packet->loadoutSlots[loadoutSlots_iter].loadoutId);
-offset += sizeof(u32);
-printf("-- loadoutId               \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].loadoutId, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].loadoutId, (double)packet->loadoutSlots[loadoutSlots_iter].loadoutId);
-
-// u32 slotId
-endian_write_u32_little(buffer + offset, packet->loadoutSlots[loadoutSlots_iter].slotId);
-offset += sizeof(u32);
-printf("-- slotId                  \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].slotId, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].slotId, (double)packet->loadoutSlots[loadoutSlots_iter].slotId);
-
-// u32 itemDefId
-endian_write_u32_little(buffer + offset, packet->loadoutSlots[loadoutSlots_iter].itemDefId);
-offset += sizeof(u32);
-printf("-- itemDefId               \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].itemDefId, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].itemDefId, (double)packet->loadoutSlots[loadoutSlots_iter].itemDefId);
-
-// u64 loadoutItemGuid
-endian_write_u64_little(buffer + offset, packet->loadoutSlots[loadoutSlots_iter].loadoutItemGuid);
-offset += sizeof(u64);
-printf("-- loadoutItemGuid         \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].loadoutItemGuid, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].loadoutItemGuid, (double)packet->loadoutSlots[loadoutSlots_iter].loadoutItemGuid);
-
-// u8 unkByte1
-endian_write_u8_little(buffer + offset, packet->loadoutSlots[loadoutSlots_iter].unkByte1);
-offset += sizeof(u8);
-printf("-- unkByte1                \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].unkByte1, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].unkByte1, (double)packet->loadoutSlots[loadoutSlots_iter].unkByte1);
-
-// u32 unkDword1
-endian_write_u32_little(buffer + offset, packet->loadoutSlots[loadoutSlots_iter].unkDword1);
-offset += sizeof(u32);
-printf("-- unkDword1               \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].unkDword1, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].unkDword1, (double)packet->loadoutSlots[loadoutSlots_iter].unkDword1);
-
-} // loadoutSlots
-
-// list characters
-endian_write_u32_little(buffer + offset, packet->characters_count);
-offset += sizeof(u32);
-printf("-- LIST_COUNT              \t%lld\t%llxh\t%f\n", (i64)packet->characters_count, (uint64_t)packet->characters_count, (double)packet->characters_count);
-
-for (uint32_t characters_iter = 0; characters_iter < packet->characters_count; characters_iter++)
-{
-// u64 charId
-endian_write_u64_little(buffer + offset, packet->characters[characters_iter].charId);
-offset += sizeof(u64);
-printf("-- charId                  \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].charId, (uint64_t)packet->characters[characters_iter].charId, (double)packet->characters[characters_iter].charId);
-
-// u32 serverId
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].serverId);
-offset += sizeof(u32);
-printf("-- serverId                \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].serverId, (uint64_t)packet->characters[characters_iter].serverId, (double)packet->characters[characters_iter].serverId);
-
-// u64 lastLoginDate
-endian_write_u64_little(buffer + offset, packet->characters[characters_iter].lastLoginDate);
-offset += sizeof(u64);
-printf("-- lastLoginDate           \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].lastLoginDate, (uint64_t)packet->characters[characters_iter].lastLoginDate, (double)packet->characters[characters_iter].lastLoginDate);
-
-// u32 nullField
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].nullField);
-offset += sizeof(u32);
-printf("-- nullField               \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].nullField, (uint64_t)packet->characters[characters_iter].nullField, (double)packet->characters[characters_iter].nullField);
-
-// u32 status
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].status);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].status, (uint64_t)packet->characters[characters_iter].status, (double)packet->characters[characters_iter].status);
-
-// stream payload
-void* payload_length_ptr = buffer + offset;
-offset += sizeof(u32);
-printf("-- STREAM_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload_length, (uint64_t)packet->characters[characters_iter].payload_length, (double)packet->characters[characters_iter].payload_length);
-
-uint32_t will_pack_payload = packet->characters[characters_iter].payload_length == ~(u32)0 ? 0 : 1;
-for (uint32_t payload_iter = 0; payload_iter < will_pack_payload; payload_iter++)
-{
-// string name
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].name_length, (uint64_t)packet->characters[characters_iter].payload[payload_iter].name_length, (double)packet->characters[characters_iter].payload[payload_iter].name_length);
-for (uint32_t name_iter = 0; name_iter < packet->characters[characters_iter].payload[payload_iter].name_length; name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].name[name_iter]);
-offset++;
-}
-
-// u8 empireId
-endian_write_u8_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].empireId);
-offset += sizeof(u8);
-printf("-- empireId                \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].empireId, (uint64_t)packet->characters[characters_iter].payload[payload_iter].empireId, (double)packet->characters[characters_iter].payload[payload_iter].empireId);
-
-// u32 battleRank
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].battleRank);
-offset += sizeof(u32);
-printf("-- battleRank              \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].battleRank, (uint64_t)packet->characters[characters_iter].payload[payload_iter].battleRank, (double)packet->characters[characters_iter].payload[payload_iter].battleRank);
-
-// u32 nextBattleRankPercent
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].nextBattleRankPercent);
-offset += sizeof(u32);
-printf("-- nextBattleRankPercent   \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].nextBattleRankPercent, (uint64_t)packet->characters[characters_iter].payload[payload_iter].nextBattleRankPercent, (double)packet->characters[characters_iter].payload[payload_iter].nextBattleRankPercent);
-
-// u32 headId
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].headId);
-offset += sizeof(u32);
-printf("-- headId                  \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].headId, (uint64_t)packet->characters[characters_iter].payload[payload_iter].headId, (double)packet->characters[characters_iter].payload[payload_iter].headId);
-
-// u32 actorModelId
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].actorModelId);
-offset += sizeof(u32);
-printf("-- actorModelId            \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].actorModelId, (uint64_t)packet->characters[characters_iter].payload[payload_iter].actorModelId, (double)packet->characters[characters_iter].payload[payload_iter].actorModelId);
-
-// u32 gender
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].gender);
-offset += sizeof(u32);
-printf("-- gender                  \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].gender, (uint64_t)packet->characters[characters_iter].payload[payload_iter].gender, (double)packet->characters[characters_iter].payload[payload_iter].gender);
-
-// u32 profileId
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].profileId);
-offset += sizeof(u32);
-printf("-- profileId               \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].profileId, (uint64_t)packet->characters[characters_iter].payload[payload_iter].profileId, (double)packet->characters[characters_iter].payload[payload_iter].profileId);
-
-// u32 unkDword1
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].unkDword1);
-offset += sizeof(u32);
-printf("-- unkDword1               \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].unkDword1, (uint64_t)packet->characters[characters_iter].payload[payload_iter].unkDword1, (double)packet->characters[characters_iter].payload[payload_iter].unkDword1);
-
-// u32 unkDword2
-endian_write_u32_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].unkDword2);
-offset += sizeof(u32);
-printf("-- unkDword2               \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].unkDword2, (uint64_t)packet->characters[characters_iter].payload[payload_iter].unkDword2, (double)packet->characters[characters_iter].payload[payload_iter].unkDword2);
-
-// u64 lastUseDate
-endian_write_u64_little(buffer + offset, packet->characters[characters_iter].payload[payload_iter].lastUseDate);
-offset += sizeof(u64);
-printf("-- lastUseDate             \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].lastUseDate, (uint64_t)packet->characters[characters_iter].payload[payload_iter].lastUseDate, (double)packet->characters[characters_iter].payload[payload_iter].lastUseDate);
-
-} // payload
-endian_write_u32_little((uint8_t*)payload_length_ptr, (u32)((uptr)buffer + (uptr)offset - (uptr)payload_length_ptr - sizeof(u32)));
-
-} // characters
-
-} break;
-
-case Login_Packet_Kind_ServerListRequest:
-{
-printf("[*] Packing ServerListRequest...\n");
-endian_write_u8_little(buffer + offset, 0xd);
-offset += sizeof(u8);
-
-} break;
-
-case Login_Packet_Kind_ServerListReply:
-{
-printf("[*] Packing ServerListReply...\n");
-Login_Packet_ServerListReply* packet = static_cast<Login_Packet_ServerListReply*>(packet_ptr);
-
-endian_write_u8_little(buffer + offset, 0xe);
-offset += sizeof(u8);
-
-// list servers
-endian_write_u32_little(buffer + offset, packet->servers_count);
-offset += sizeof(u32);
-printf("-- LIST_COUNT              \t%lld\t%llxh\t%f\n", (i64)packet->servers_count, (uint64_t)packet->servers_count, (double)packet->servers_count);
-
-for (uint32_t servers_iter = 0; servers_iter < packet->servers_count; servers_iter++)
-{
-// u32 id
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].id);
-offset += sizeof(u32);
-printf("-- id                      \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].id, (uint64_t)packet->servers[servers_iter].id, (double)packet->servers[servers_iter].id);
-
-// u32 state
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].state);
-offset += sizeof(u32);
-printf("-- state                   \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].state, (uint64_t)packet->servers[servers_iter].state, (double)packet->servers[servers_iter].state);
-
-// b8 is_locked
-endian_write_b8_little(buffer + offset, packet->servers[servers_iter].is_locked);
-offset += sizeof(b8);
-printf("-- is_locked               \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].is_locked, (uint64_t)packet->servers[servers_iter].is_locked, (double)packet->servers[servers_iter].is_locked);
-
-// string name
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].name_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].name_length, (uint64_t)packet->servers[servers_iter].name_length, (double)packet->servers[servers_iter].name_length);
-for (uint32_t name_iter = 0; name_iter < packet->servers[servers_iter].name_length; name_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->servers[servers_iter].name[name_iter]);
-offset++;
-}
-
-// u32 name_id
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].name_id);
-offset += sizeof(u32);
-printf("-- name_id                 \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].name_id, (uint64_t)packet->servers[servers_iter].name_id, (double)packet->servers[servers_iter].name_id);
-
-// string description
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].description_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].description_length, (uint64_t)packet->servers[servers_iter].description_length, (double)packet->servers[servers_iter].description_length);
-for (uint32_t description_iter = 0; description_iter < packet->servers[servers_iter].description_length; description_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->servers[servers_iter].description[description_iter]);
-offset++;
-}
-
-// u32 description_id
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].description_id);
-offset += sizeof(u32);
-printf("-- description_id          \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].description_id, (uint64_t)packet->servers[servers_iter].description_id, (double)packet->servers[servers_iter].description_id);
-
-// u32 req_feature_id
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].req_feature_id);
-offset += sizeof(u32);
-printf("-- req_feature_id          \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].req_feature_id, (uint64_t)packet->servers[servers_iter].req_feature_id, (double)packet->servers[servers_iter].req_feature_id);
-
-// string server_info
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].server_info_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].server_info_length, (uint64_t)packet->servers[servers_iter].server_info_length, (double)packet->servers[servers_iter].server_info_length);
-for (uint32_t server_info_iter = 0; server_info_iter < packet->servers[servers_iter].server_info_length; server_info_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->servers[servers_iter].server_info[server_info_iter]);
-offset++;
-}
-
-// u32 population_level
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].population_level);
-offset += sizeof(u32);
-printf("-- population_level        \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].population_level, (uint64_t)packet->servers[servers_iter].population_level, (double)packet->servers[servers_iter].population_level);
-
-// string population_data
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].population_data_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].population_data_length, (uint64_t)packet->servers[servers_iter].population_data_length, (double)packet->servers[servers_iter].population_data_length);
-for (uint32_t population_data_iter = 0; population_data_iter < packet->servers[servers_iter].population_data_length; population_data_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->servers[servers_iter].population_data[population_data_iter]);
-offset++;
-}
-
-// string access_expression
-endian_write_u32_little(buffer + offset, packet->servers[servers_iter].access_expression_length);
-offset += sizeof(u32);
-printf("-- STRING_LENGTH           \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].access_expression_length, (uint64_t)packet->servers[servers_iter].access_expression_length, (double)packet->servers[servers_iter].access_expression_length);
-for (uint32_t access_expression_iter = 0; access_expression_iter < packet->servers[servers_iter].access_expression_length; access_expression_iter++)
-{
-endian_write_i8_little(buffer + offset, packet->servers[servers_iter].access_expression[access_expression_iter]);
-offset++;
-}
-
-// b8 is_access_allowed
-endian_write_b8_little(buffer + offset, packet->servers[servers_iter].is_access_allowed);
-offset += sizeof(b8);
-printf("-- is_access_allowed       \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].is_access_allowed, (uint64_t)packet->servers[servers_iter].is_access_allowed, (double)packet->servers[servers_iter].is_access_allowed);
-
-} // servers
-
-} break;
-
-case Login_Packet_Kind_ServerUpdate:
-{
-printf("[*] Packing ServerUpdate...\n");
-endian_write_u8_little(buffer + offset, 0xf);
-offset += sizeof(u8);
-
-} break;
-
-default:
-{
-printf("Packing not implemented\n");
-}
-}
-return offset;
-}
-
-void
-login_packet_unpack(uint8_t* data, uint32_t data_length, enum Login_Packet_Kind packet_kind, void* packet_ptr, Arena* arena)
-{
-UNUSED(data_length);
-uint32_t offset = 0;
-
-printf("\n");
-switch (packet_kind)
-{
-case Login_Packet_Kind_LoginRequest:
-{
-printf("[*] Unpacking LoginRequest...\n");
-Login_Packet_LoginRequest* packet = static_cast<Login_Packet_LoginRequest*>(packet_ptr);
-
-// string session_id
-packet->session_id_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->session_id = reinterpret_cast<char*>(arena_push_size(arena, packet->session_id_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->session_id_length);
-for (u32 session_id_iter = 0; session_id_iter < packet->session_id_length; session_id_iter++)
-{
-packet->session_id[session_id_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// string system_fingerprint
-packet->system_fingerprint_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->system_fingerprint = reinterpret_cast<char*>(arena_push_size(arena, packet->system_fingerprint_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->system_fingerprint_length);
-for (u32 system_fingerprint_iter = 0; system_fingerprint_iter < packet->system_fingerprint_length; system_fingerprint_iter++)
-{
-packet->system_fingerprint[system_fingerprint_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 locale
-packet->locale = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- locale                  \t%lld\t%llxh\t%f\n", (i64)packet->locale, (uint64_t)packet->locale, (double)packet->locale);
-
-// u32 third_party_auth_ticket
-packet->third_party_auth_ticket = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- third_party_auth_ticket \t%lld\t%llxh\t%f\n", (i64)packet->third_party_auth_ticket, (uint64_t)packet->third_party_auth_ticket, (double)packet->third_party_auth_ticket);
-
-// u32 third_party_user_id
-packet->third_party_user_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- third_party_user_id     \t%lld\t%llxh\t%f\n", (i64)packet->third_party_user_id, (uint64_t)packet->third_party_user_id, (double)packet->third_party_user_id);
-
-// u32 third_party_id
-packet->third_party_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- third_party_id          \t%lld\t%llxh\t%f\n", (i64)packet->third_party_id, (uint64_t)packet->third_party_id, (double)packet->third_party_id);
-
-} break;
-
-case Login_Packet_Kind_LoginReply:
-{
-printf("[*] Unpacking LoginReply...\n");
-Login_Packet_LoginReply* packet = static_cast<Login_Packet_LoginReply*>(packet_ptr);
-
-// b8 is_logged_in
-packet->is_logged_in = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- is_logged_in            \t%lld\t%llxh\t%f\n", (i64)packet->is_logged_in, (uint64_t)packet->is_logged_in, (double)packet->is_logged_in);
-
-// u32 status
-packet->status = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// u32 result_code
-packet->result_code = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- result_code             \t%lld\t%llxh\t%f\n", (i64)packet->result_code, (uint64_t)packet->result_code, (double)packet->result_code);
-
-// b8 is_member
-packet->is_member = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- is_member               \t%lld\t%llxh\t%f\n", (i64)packet->is_member, (uint64_t)packet->is_member, (double)packet->is_member);
-
-// b8 is_internal
-packet->is_internal = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- is_internal             \t%lld\t%llxh\t%f\n", (i64)packet->is_internal, (uint64_t)packet->is_internal, (double)packet->is_internal);
-
-// string namespace_name
-packet->namespace_name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->namespace_name = reinterpret_cast<char*>(arena_push_size(arena, packet->namespace_name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->namespace_name_length);
-for (u32 namespace_name_iter = 0; namespace_name_iter < packet->namespace_name_length; namespace_name_iter++)
-{
-packet->namespace_name[namespace_name_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// list account_features
-packet->account_features_count = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->account_features = static_cast<Login_Packet_LoginReply::account_features_s*>(arena_push_size(arena, packet->account_features_count * sizeof(packet->account_features[0])));
-printf("-- LIST_COUNT              \t%d\n", packet->account_features_count);
-for (u32 account_features_iter = 0; account_features_iter < packet->account_features_count; account_features_iter++)
-{
-// u32 key
-packet->account_features[account_features_iter].key = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- key                     \t%lld\t%llxh\t%f\n", (i64)packet->account_features[account_features_iter].key, (uint64_t)packet->account_features[account_features_iter].key, (double)packet->account_features[account_features_iter].key);
-
-// u32 id
-packet->account_features[account_features_iter].id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- id                      \t%lld\t%llxh\t%f\n", (i64)packet->account_features[account_features_iter].id, (uint64_t)packet->account_features[account_features_iter].id, (double)packet->account_features[account_features_iter].id);
-
-// b8 active
-packet->account_features[account_features_iter].active = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- active                  \t%lld\t%llxh\t%f\n", (i64)packet->account_features[account_features_iter].active, (uint64_t)packet->account_features[account_features_iter].active, (double)packet->account_features[account_features_iter].active);
-
-// u32 remaining_count
-packet->account_features[account_features_iter].remaining_count = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- remaining_count         \t%lld\t%llxh\t%f\n", (i64)packet->account_features[account_features_iter].remaining_count, (uint64_t)packet->account_features[account_features_iter].remaining_count, (double)packet->account_features[account_features_iter].remaining_count);
-
-// string raw_data
-packet->account_features[account_features_iter].raw_data_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->account_features[account_features_iter].raw_data = reinterpret_cast<char*>(arena_push_size(arena, packet->account_features[account_features_iter].raw_data_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->account_features[account_features_iter].raw_data_length);
-for (u32 raw_data_iter = 0; raw_data_iter < packet->account_features[account_features_iter].raw_data_length; raw_data_iter++)
-{
-packet->account_features[account_features_iter].raw_data[raw_data_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-} // account_features
-
-// bytes application_payload
-packet->application_payload_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->application_payload = reinterpret_cast<uint8_t*>(arena_push_size(arena, packet->application_payload_length));
-printf("-- BYTES_LENGTH            \t%d\n", packet->application_payload_length);
-for (u32 application_payload_iter = 0; application_payload_iter < packet->application_payload_length; application_payload_iter++)
-{
-packet->application_payload[application_payload_iter] = *(uint8_t*)((uptr)data + offset);
-offset++;
-}
-
-// list error_details
-packet->error_details_count = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->error_details = static_cast<Login_Packet_LoginReply::error_details_s*>(arena_push_size(arena, packet->error_details_count * sizeof(packet->error_details[0])));
-printf("-- LIST_COUNT              \t%d\n", packet->error_details_count);
-for (u32 error_details_iter = 0; error_details_iter < packet->error_details_count; error_details_iter++)
-{
-// u32 unknown_dword1
-packet->error_details[error_details_iter].unknown_dword1 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unknown_dword1          \t%lld\t%llxh\t%f\n", (i64)packet->error_details[error_details_iter].unknown_dword1, (uint64_t)packet->error_details[error_details_iter].unknown_dword1, (double)packet->error_details[error_details_iter].unknown_dword1);
-
-// string name
-packet->error_details[error_details_iter].name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->error_details[error_details_iter].name = reinterpret_cast<char*>(arena_push_size(arena, packet->error_details[error_details_iter].name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->error_details[error_details_iter].name_length);
-for (u32 name_iter = 0; name_iter < packet->error_details[error_details_iter].name_length; name_iter++)
-{
-packet->error_details[error_details_iter].name[name_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// string value
-packet->error_details[error_details_iter].value_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->error_details[error_details_iter].value = reinterpret_cast<char*>(arena_push_size(arena, packet->error_details[error_details_iter].value_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->error_details[error_details_iter].value_length);
-for (u32 value_iter = 0; value_iter < packet->error_details[error_details_iter].value_length; value_iter++)
-{
-packet->error_details[error_details_iter].value[value_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-} // error_details
-
-// string ip_country_code
-packet->ip_country_code_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->ip_country_code = reinterpret_cast<char*>(arena_push_size(arena, packet->ip_country_code_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->ip_country_code_length);
-for (u32 ip_country_code_iter = 0; ip_country_code_iter < packet->ip_country_code_length; ip_country_code_iter++)
-{
-packet->ip_country_code[ip_country_code_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-} break;
-
-case Login_Packet_Kind_CharacterCreateRequest:
-{
-printf("[*] Unpacking CharacterCreateRequest...\n");
-Login_Packet_CharacterCreateRequest* packet = static_cast<Login_Packet_CharacterCreateRequest*>(packet_ptr);
-
-// u32 server_id
-packet->server_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 unk_u32
-packet->unk_u32 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_u32                 \t%lld\t%llxh\t%f\n", (i64)packet->unk_u32, (uint64_t)packet->unk_u32, (double)packet->unk_u32);
-
-// stream char_payload
-packet->char_payload_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->char_payload = static_cast<Login_Packet_CharacterCreateRequest::char_payload_s*>(arena_push_size(arena, packet->char_payload_length * sizeof(packet->char_payload[0])));
-printf("-- STREAM_LENGTH           \t%d\n", packet->char_payload_length);
-for (u32 char_payload_iter = 0; char_payload_iter < (packet->char_payload_length > (u32)0 ? (u32)1 : (u32)0); char_payload_iter++)
-{
-// u8 empire_id
-packet->char_payload[char_payload_iter].empire_id = endian_read_u8_little(data + offset);
-offset += sizeof(u8);
-printf("-- empire_id               \t%lld\t%llxh\t%f\n", (i64)packet->char_payload[char_payload_iter].empire_id, (uint64_t)packet->char_payload[char_payload_iter].empire_id, (double)packet->char_payload[char_payload_iter].empire_id);
-
-// u32 head_type
-packet->char_payload[char_payload_iter].head_type = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- head_type               \t%lld\t%llxh\t%f\n", (i64)packet->char_payload[char_payload_iter].head_type, (uint64_t)packet->char_payload[char_payload_iter].head_type, (double)packet->char_payload[char_payload_iter].head_type);
-
-// u32 profile_type
-packet->char_payload[char_payload_iter].profile_type = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- profile_type            \t%lld\t%llxh\t%f\n", (i64)packet->char_payload[char_payload_iter].profile_type, (uint64_t)packet->char_payload[char_payload_iter].profile_type, (double)packet->char_payload[char_payload_iter].profile_type);
-
-// u32 gender
-packet->char_payload[char_payload_iter].gender = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- gender                  \t%lld\t%llxh\t%f\n", (i64)packet->char_payload[char_payload_iter].gender, (uint64_t)packet->char_payload[char_payload_iter].gender, (double)packet->char_payload[char_payload_iter].gender);
-
-// string character_name
-packet->char_payload[char_payload_iter].character_name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->char_payload[char_payload_iter].character_name = reinterpret_cast<char*>(arena_push_size(arena, packet->char_payload[char_payload_iter].character_name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->char_payload[char_payload_iter].character_name_length);
-for (u32 character_name_iter = 0; character_name_iter < packet->char_payload[char_payload_iter].character_name_length; character_name_iter++)
-{
-packet->char_payload[char_payload_iter].character_name[character_name_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-} // char_payload
-
-} break;
-
-case Login_Packet_Kind_CharacterCreateReply:
-{
-printf("[*] Unpacking CharacterCreateReply...\n");
-Login_Packet_CharacterCreateReply* packet = static_cast<Login_Packet_CharacterCreateReply*>(packet_ptr);
-
-// u32 status
-packet->status = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// u64 character_id
-packet->character_id = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-} break;
-
-case Login_Packet_Kind_CharacterLoginRequest:
-{
-printf("[*] Unpacking CharacterLoginRequest...\n");
-Login_Packet_CharacterLoginRequest* packet = static_cast<Login_Packet_CharacterLoginRequest*>(packet_ptr);
-
-// u64 character_id
-packet->character_id = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-// u32 server_id
-packet->server_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 status
-packet->status = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// stream payload2
-packet->payload2_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->payload2 = static_cast<Login_Packet_CharacterLoginRequest::payload2_s*>(arena_push_size(arena, packet->payload2_length * sizeof(packet->payload2[0])));
-printf("-- STREAM_LENGTH           \t%d\n", packet->payload2_length);
-for (u32 payload2_iter = 0; payload2_iter < (packet->payload2_length > (u32)0 ? (u32)1 : (u32)0); payload2_iter++)
-{
-// string locale
-packet->payload2[payload2_iter].locale_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->payload2[payload2_iter].locale = reinterpret_cast<char*>(arena_push_size(arena, packet->payload2[payload2_iter].locale_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->payload2[payload2_iter].locale_length);
-for (u32 locale_iter = 0; locale_iter < packet->payload2[payload2_iter].locale_length; locale_iter++)
-{
-packet->payload2[payload2_iter].locale[locale_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 locale_id
-packet->payload2[payload2_iter].locale_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- locale_id               \t%lld\t%llxh\t%f\n", (i64)packet->payload2[payload2_iter].locale_id, (uint64_t)packet->payload2[payload2_iter].locale_id, (double)packet->payload2[payload2_iter].locale_id);
-
-// u32 preferred_gateway_id
-packet->payload2[payload2_iter].preferred_gateway_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- preferred_gateway_id    \t%lld\t%llxh\t%f\n", (i64)packet->payload2[payload2_iter].preferred_gateway_id, (uint64_t)packet->payload2[payload2_iter].preferred_gateway_id, (double)packet->payload2[payload2_iter].preferred_gateway_id);
-
-} // payload2
-
-} break;
-
-case Login_Packet_Kind_CharacterLoginReply:
-{
-printf("[*] Unpacking CharacterLoginReply...\n");
-Login_Packet_CharacterLoginReply* packet = static_cast<Login_Packet_CharacterLoginReply*>(packet_ptr);
-
-// u64 character_id
-packet->character_id = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-// u32 server_id
-packet->server_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 last_login
-packet->last_login = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- last_login              \t%lld\t%llxh\t%f\n", (i64)packet->last_login, (uint64_t)packet->last_login, (double)packet->last_login);
-
-// u32 status
-packet->status = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// stream login_payload
-packet->login_payload_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->login_payload = static_cast<Login_Packet_CharacterLoginReply::login_payload_s*>(arena_push_size(arena, packet->login_payload_length * sizeof(packet->login_payload[0])));
-printf("-- STREAM_LENGTH           \t%d\n", packet->login_payload_length);
-for (u32 login_payload_iter = 0; login_payload_iter < (packet->login_payload_length > (u32)0 ? (u32)1 : (u32)0); login_payload_iter++)
-{
-// string server_address
-packet->login_payload[login_payload_iter].server_address_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->login_payload[login_payload_iter].server_address = reinterpret_cast<char*>(arena_push_size(arena, packet->login_payload[login_payload_iter].server_address_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->login_payload[login_payload_iter].server_address_length);
-for (u32 server_address_iter = 0; server_address_iter < packet->login_payload[login_payload_iter].server_address_length; server_address_iter++)
-{
-packet->login_payload[login_payload_iter].server_address[server_address_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// string server_ticket
-packet->login_payload[login_payload_iter].server_ticket_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->login_payload[login_payload_iter].server_ticket = reinterpret_cast<char*>(arena_push_size(arena, packet->login_payload[login_payload_iter].server_ticket_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->login_payload[login_payload_iter].server_ticket_length);
-for (u32 server_ticket_iter = 0; server_ticket_iter < packet->login_payload[login_payload_iter].server_ticket_length; server_ticket_iter++)
-{
-packet->login_payload[login_payload_iter].server_ticket[server_ticket_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// bytes encryption_key
-packet->login_payload[login_payload_iter].encryption_key_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->login_payload[login_payload_iter].encryption_key = reinterpret_cast<uint8_t*>(arena_push_size(arena, packet->login_payload[login_payload_iter].encryption_key_length));
-printf("-- BYTES_LENGTH            \t%d\n", packet->login_payload[login_payload_iter].encryption_key_length);
-for (u32 encryption_key_iter = 0; encryption_key_iter < packet->login_payload[login_payload_iter].encryption_key_length; encryption_key_iter++)
-{
-packet->login_payload[login_payload_iter].encryption_key[encryption_key_iter] = *(uint8_t*)((uptr)data + offset);
-offset++;
-}
-
-// u32 soe_protocol_version
-packet->login_payload[login_payload_iter].soe_protocol_version = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- soe_protocol_version    \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].soe_protocol_version, (uint64_t)packet->login_payload[login_payload_iter].soe_protocol_version, (double)packet->login_payload[login_payload_iter].soe_protocol_version);
-
-// u64 character_id
-packet->login_payload[login_payload_iter].character_id = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].character_id, (uint64_t)packet->login_payload[login_payload_iter].character_id, (double)packet->login_payload[login_payload_iter].character_id);
-
-// u64 unk_u64
-packet->login_payload[login_payload_iter].unk_u64 = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- unk_u64                 \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].unk_u64, (uint64_t)packet->login_payload[login_payload_iter].unk_u64, (double)packet->login_payload[login_payload_iter].unk_u64);
-
-// string station_name
-packet->login_payload[login_payload_iter].station_name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->login_payload[login_payload_iter].station_name = reinterpret_cast<char*>(arena_push_size(arena, packet->login_payload[login_payload_iter].station_name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->login_payload[login_payload_iter].station_name_length);
-for (u32 station_name_iter = 0; station_name_iter < packet->login_payload[login_payload_iter].station_name_length; station_name_iter++)
-{
-packet->login_payload[login_payload_iter].station_name[station_name_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// string character_name
-packet->login_payload[login_payload_iter].character_name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->login_payload[login_payload_iter].character_name = reinterpret_cast<char*>(arena_push_size(arena, packet->login_payload[login_payload_iter].character_name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->login_payload[login_payload_iter].character_name_length);
-for (u32 character_name_iter = 0; character_name_iter < packet->login_payload[login_payload_iter].character_name_length; character_name_iter++)
-{
-packet->login_payload[login_payload_iter].character_name[character_name_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// string unk_str
-packet->login_payload[login_payload_iter].unk_str_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->login_payload[login_payload_iter].unk_str = reinterpret_cast<char*>(arena_push_size(arena, packet->login_payload[login_payload_iter].unk_str_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->login_payload[login_payload_iter].unk_str_length);
-for (u32 unk_str_iter = 0; unk_str_iter < packet->login_payload[login_payload_iter].unk_str_length; unk_str_iter++)
-{
-packet->login_payload[login_payload_iter].unk_str[unk_str_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u64 server_feature_bit
-packet->login_payload[login_payload_iter].server_feature_bit = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- server_feature_bit      \t%lld\t%llxh\t%f\n", (i64)packet->login_payload[login_payload_iter].server_feature_bit, (uint64_t)packet->login_payload[login_payload_iter].server_feature_bit, (double)packet->login_payload[login_payload_iter].server_feature_bit);
-
-} // login_payload
-
-} break;
-
-case Login_Packet_Kind_CharacterDeleteRequest:
-{
-printf("[*] Unpacking CharacterDeleteRequest...\n");
-Login_Packet_CharacterDeleteRequest* packet = static_cast<Login_Packet_CharacterDeleteRequest*>(packet_ptr);
-
-// u64 character_id
-packet->character_id = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-} break;
-
-case Login_Packet_Kind_TunnelAppPacketClientToServer:
-{
-printf("[*] Unpacking TunnelAppPacketClientToServer...\n");
-Login_Packet_TunnelAppPacketClientToServer* packet = static_cast<Login_Packet_TunnelAppPacketClientToServer*>(packet_ptr);
-
-// u32 server_id
-packet->server_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 unk1
-packet->unk1 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk1                    \t%lld\t%llxh\t%f\n", (i64)packet->unk1, (uint64_t)packet->unk1, (double)packet->unk1);
-
-// stream data_client
-packet->data_client_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->data_client = static_cast<Login_Packet_TunnelAppPacketClientToServer::data_client_s*>(arena_push_size(arena, packet->data_client_length * sizeof(packet->data_client[0])));
-printf("-- STREAM_LENGTH           \t%d\n", packet->data_client_length);
-for (u32 data_client_iter = 0; data_client_iter < (packet->data_client_length > (u32)0 ? (u32)1 : (u32)0); data_client_iter++)
-{
-// b8 tunnel_op_code
-packet->data_client[data_client_iter].tunnel_op_code = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- tunnel_op_code          \t%lld\t%llxh\t%f\n", (i64)packet->data_client[data_client_iter].tunnel_op_code, (uint64_t)packet->data_client[data_client_iter].tunnel_op_code, (double)packet->data_client[data_client_iter].tunnel_op_code);
-
-// b8 sub_op_code
-packet->data_client[data_client_iter].sub_op_code = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- sub_op_code             \t%lld\t%llxh\t%f\n", (i64)packet->data_client[data_client_iter].sub_op_code, (uint64_t)packet->data_client[data_client_iter].sub_op_code, (double)packet->data_client[data_client_iter].sub_op_code);
-
-// string character_name
-packet->data_client[data_client_iter].character_name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->data_client[data_client_iter].character_name = reinterpret_cast<char*>(arena_push_size(arena, packet->data_client[data_client_iter].character_name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->data_client[data_client_iter].character_name_length);
-for (u32 character_name_iter = 0; character_name_iter < packet->data_client[data_client_iter].character_name_length; character_name_iter++)
-{
-packet->data_client[data_client_iter].character_name[character_name_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-} // data_client
-
-} break;
-
-case Login_Packet_Kind_TunnelAppPacketServerToClient:
-{
-printf("[*] Unpacking TunnelAppPacketServerToClient...\n");
-Login_Packet_TunnelAppPacketServerToClient* packet = static_cast<Login_Packet_TunnelAppPacketServerToClient*>(packet_ptr);
-
-// u32 server_id
-packet->server_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- server_id               \t%lld\t%llxh\t%f\n", (i64)packet->server_id, (uint64_t)packet->server_id, (double)packet->server_id);
-
-// u32 unk1
-packet->unk1 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk1                    \t%lld\t%llxh\t%f\n", (i64)packet->unk1, (uint64_t)packet->unk1, (double)packet->unk1);
-
-// stream data_server
-packet->data_server_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->data_server = static_cast<Login_Packet_TunnelAppPacketServerToClient::data_server_s*>(arena_push_size(arena, packet->data_server_length * sizeof(packet->data_server[0])));
-printf("-- STREAM_LENGTH           \t%d\n", packet->data_server_length);
-for (u32 data_server_iter = 0; data_server_iter < (packet->data_server_length > (u32)0 ? (u32)1 : (u32)0); data_server_iter++)
-{
-// u8 tunnel_op_code
-packet->data_server[data_server_iter].tunnel_op_code = endian_read_u8_little(data + offset);
-offset += sizeof(u8);
-printf("-- tunnel_op_code          \t%lld\t%llxh\t%f\n", (i64)packet->data_server[data_server_iter].tunnel_op_code, (uint64_t)packet->data_server[data_server_iter].tunnel_op_code, (double)packet->data_server[data_server_iter].tunnel_op_code);
-
-// u8 sub_op_code
-packet->data_server[data_server_iter].sub_op_code = endian_read_u8_little(data + offset);
-offset += sizeof(u8);
-printf("-- sub_op_code             \t%lld\t%llxh\t%f\n", (i64)packet->data_server[data_server_iter].sub_op_code, (uint64_t)packet->data_server[data_server_iter].sub_op_code, (double)packet->data_server[data_server_iter].sub_op_code);
-
-// string character_name
-packet->data_server[data_server_iter].character_name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->data_server[data_server_iter].character_name = reinterpret_cast<char*>(arena_push_size(arena, packet->data_server[data_server_iter].character_name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->data_server[data_server_iter].character_name_length);
-for (u32 character_name_iter = 0; character_name_iter < packet->data_server[data_server_iter].character_name_length; character_name_iter++)
-{
-packet->data_server[data_server_iter].character_name[character_name_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// string character_name2
-packet->data_server[data_server_iter].character_name2_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->data_server[data_server_iter].character_name2 = reinterpret_cast<char*>(arena_push_size(arena, packet->data_server[data_server_iter].character_name2_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->data_server[data_server_iter].character_name2_length);
-for (u32 character_name2_iter = 0; character_name2_iter < packet->data_server[data_server_iter].character_name2_length; character_name2_iter++)
-{
-packet->data_server[data_server_iter].character_name2[character_name2_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 status
-packet->data_server[data_server_iter].status = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->data_server[data_server_iter].status, (uint64_t)packet->data_server[data_server_iter].status, (double)packet->data_server[data_server_iter].status);
-
-} // data_server
-
-} break;
-
-case Login_Packet_Kind_CharacterDeleteReply:
-{
-printf("[*] Unpacking CharacterDeleteReply...\n");
-Login_Packet_CharacterDeleteReply* packet = static_cast<Login_Packet_CharacterDeleteReply*>(packet_ptr);
-
-// u64 character_id
-packet->character_id = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- character_id            \t%lld\t%llxh\t%f\n", (i64)packet->character_id, (uint64_t)packet->character_id, (double)packet->character_id);
-
-// u32 status
-packet->status = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->status, (uint64_t)packet->status, (double)packet->status);
-
-// bytes payload3
-packet->payload3_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->payload3 = reinterpret_cast<uint8_t*>(arena_push_size(arena, packet->payload3_length));
-printf("-- BYTES_LENGTH            \t%d\n", packet->payload3_length);
-for (u32 payload3_iter = 0; payload3_iter < packet->payload3_length; payload3_iter++)
-{
-packet->payload3[payload3_iter] = *(uint8_t*)((uptr)data + offset);
-offset++;
-}
-
-} break;
-
-case Login_Packet_Kind_CharacterSelectInfoReply:
-{
-printf("[*] Unpacking CharacterSelectInfoReply...\n");
-Login_Packet_CharacterSelectInfoReply* packet = static_cast<Login_Packet_CharacterSelectInfoReply*>(packet_ptr);
-
-// u32 character_status
-packet->character_status = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- character_status        \t%lld\t%llxh\t%f\n", (i64)packet->character_status, (uint64_t)packet->character_status, (double)packet->character_status);
-
-// b8 can_bypass_server_lock
-packet->can_bypass_server_lock = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- can_bypass_server_lock  \t%lld\t%llxh\t%f\n", (i64)packet->can_bypass_server_lock, (uint64_t)packet->can_bypass_server_lock, (double)packet->can_bypass_server_lock);
-
-// list stats_item_def_2
-packet->stats_item_def_2_count = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->stats_item_def_2 = static_cast<Login_Packet_CharacterSelectInfoReply::stats_item_def_2_s*>(arena_push_size(arena, packet->stats_item_def_2_count * sizeof(packet->stats_item_def_2[0])));
-printf("-- LIST_COUNT              \t%d\n", packet->stats_item_def_2_count);
-for (u32 stats_item_def_2_iter = 0; stats_item_def_2_iter < packet->stats_item_def_2_count; stats_item_def_2_iter++)
-{
-// u32 unk_dword_9
-packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_9 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_9             \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_9, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_9, (double)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_9);
-
-// u32 stat_id
-packet->stats_item_def_2[stats_item_def_2_iter].stat_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- stat_id                 \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].stat_id, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].stat_id, (double)packet->stats_item_def_2[stats_item_def_2_iter].stat_id);
-
-packet->stats_item_def_2[stats_item_def_2_iter].variabletype8_case = endian_read_u8_little(data + offset);
-offset += sizeof(u8);
-switch(packet->stats_item_def_2[stats_item_def_2_iter].variabletype8_case)
-{
-case 0:
-{
-// u32 base
-packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- base                    \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base, (double)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base);
-
-// u32 modifier
-packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- modifier                \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier, (double)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier);
-
-} break;
-case 1:
-{
-// f32 base
-packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base = endian_read_f32_little(data + offset);
-offset += sizeof(f32);
-printf("-- base                    \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base, (double)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base);
-
-// f32 modifier
-packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier = endian_read_f32_little(data + offset);
-offset += sizeof(f32);
-printf("-- modifier                \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier, (double)packet->stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier);
-
-} break;
+  LOGIN_PACKET_TABLE(LOGIN_PACKET_KIND)
 };
-// u32 unk_dword_10
-packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_10 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_10            \t%lld\t%llxh\t%f\n", (i64)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_10, (uint64_t)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_10, (double)packet->stats_item_def_2[stats_item_def_2_iter].unk_dword_10);
 
-} // stats_item_def_2
-
-// list itemDefinitions
-packet->itemDefinitions_count = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->itemDefinitions = static_cast<Login_Packet_CharacterSelectInfoReply::itemDefinitions_s*>(arena_push_size(arena, packet->itemDefinitions_count * sizeof(packet->itemDefinitions[0])));
-printf("-- LIST_COUNT              \t%d\n", packet->itemDefinitions_count);
-for (u32 itemDefinitions_iter = 0; itemDefinitions_iter < packet->itemDefinitions_count; itemDefinitions_iter++)
+#define LOGIN_PACKET_NAME(str) #str
+static std::array<std::string, static_cast<u32>(Login_Packet_Kind__End) + 1>global_login_packet_names
 {
-// u32 ID
-packet->itemDefinitions[itemDefinitions_iter].ID = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- ID                      \t%lld\t%llxh\t%f\n", (i64)packet->itemDefinitions[itemDefinitions_iter].ID, (uint64_t)packet->itemDefinitions[itemDefinitions_iter].ID, (double)packet->itemDefinitions[itemDefinitions_iter].ID);
+  LOGIN_PACKET_TABLE(LOGIN_PACKET_NAME)
+};
 
-} // itemDefinitions
-
-// list item_defs
-packet->item_defs_count = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->item_defs = static_cast<Login_Packet_CharacterSelectInfoReply::item_defs_s*>(arena_push_size(arena, packet->item_defs_count * sizeof(packet->item_defs[0])));
-printf("-- LIST_COUNT              \t%d\n", packet->item_defs_count);
-for (u32 item_defs_iter = 0; item_defs_iter < packet->item_defs_count; item_defs_iter++)
+static std::array<u8, static_cast<u8>(Login_Packet_Kind__End) + 1>global_login_packet_ids
 {
-// u32 defs_id
-packet->item_defs[item_defs_iter].defs_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- defs_id                 \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].defs_id, (uint64_t)packet->item_defs[item_defs_iter].defs_id, (double)packet->item_defs[item_defs_iter].defs_id);
+  0x1,
+  0x2,
+  0x3,
+  0x4,
+  0x5,
+  0x6,
+  0x7,
+  0x8,
+  0x9,
+  0x10,
+  0x11,
+  0x12,
+  0x13,
+  0xa,
+  0xb,
+  0xc,
+  0xd,
+  0xe,
+  0xf,
+};
 
-// u8 bitflags1
-packet->item_defs[item_defs_iter].bitflags1 = endian_read_u8_little(data + offset);
-offset += sizeof(u8);
-printf("-- bitflags1               \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].bitflags1, (uint64_t)packet->item_defs[item_defs_iter].bitflags1, (double)packet->item_defs[item_defs_iter].bitflags1);
-
-// u8 bitflags2
-packet->item_defs[item_defs_iter].bitflags2 = endian_read_u8_little(data + offset);
-offset += sizeof(u8);
-printf("-- bitflags2               \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].bitflags2, (uint64_t)packet->item_defs[item_defs_iter].bitflags2, (double)packet->item_defs[item_defs_iter].bitflags2);
-
-// u32 name_id
-packet->item_defs[item_defs_iter].name_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- name_id                 \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].name_id, (uint64_t)packet->item_defs[item_defs_iter].name_id, (double)packet->item_defs[item_defs_iter].name_id);
-
-// u32 description_id
-packet->item_defs[item_defs_iter].description_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- description_id          \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].description_id, (uint64_t)packet->item_defs[item_defs_iter].description_id, (double)packet->item_defs[item_defs_iter].description_id);
-
-// u32 content_id
-packet->item_defs[item_defs_iter].content_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- content_id              \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].content_id, (uint64_t)packet->item_defs[item_defs_iter].content_id, (double)packet->item_defs[item_defs_iter].content_id);
-
-// u32 image_set_id
-packet->item_defs[item_defs_iter].image_set_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- image_set_id            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].image_set_id, (uint64_t)packet->item_defs[item_defs_iter].image_set_id, (double)packet->item_defs[item_defs_iter].image_set_id);
-
-// u32 tint_id
-packet->item_defs[item_defs_iter].tint_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- tint_id                 \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].tint_id, (uint64_t)packet->item_defs[item_defs_iter].tint_id, (double)packet->item_defs[item_defs_iter].tint_id);
-
-// u32 hud_image_set_id
-packet->item_defs[item_defs_iter].hud_image_set_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- hud_image_set_id        \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].hud_image_set_id, (uint64_t)packet->item_defs[item_defs_iter].hud_image_set_id, (double)packet->item_defs[item_defs_iter].hud_image_set_id);
-
-// u32 unk_dword_1
-packet->item_defs[item_defs_iter].unk_dword_1 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_1             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_1, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_1, (double)packet->item_defs[item_defs_iter].unk_dword_1);
-
-// u32 unk_dword_2
-packet->item_defs[item_defs_iter].unk_dword_2 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_2             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_2, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_2, (double)packet->item_defs[item_defs_iter].unk_dword_2);
-
-// u32 cost
-packet->item_defs[item_defs_iter].cost = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- cost                    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].cost, (uint64_t)packet->item_defs[item_defs_iter].cost, (double)packet->item_defs[item_defs_iter].cost);
-
-// u32 item_class
-packet->item_defs[item_defs_iter].item_class = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- item_class              \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].item_class, (uint64_t)packet->item_defs[item_defs_iter].item_class, (double)packet->item_defs[item_defs_iter].item_class);
-
-// u32 profile_override
-packet->item_defs[item_defs_iter].profile_override = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- profile_override        \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].profile_override, (uint64_t)packet->item_defs[item_defs_iter].profile_override, (double)packet->item_defs[item_defs_iter].profile_override);
-
-// string model_name
-packet->item_defs[item_defs_iter].model_name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->item_defs[item_defs_iter].model_name = reinterpret_cast<char*>(arena_push_size(arena, packet->item_defs[item_defs_iter].model_name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->item_defs[item_defs_iter].model_name_length);
-for (u32 model_name_iter = 0; model_name_iter < packet->item_defs[item_defs_iter].model_name_length; model_name_iter++)
+struct Login_Packet_LoginRequest
 {
-packet->item_defs[item_defs_iter].model_name[model_name_iter] = *(i8*)((uptr)data + offset);
-offset++;
+  Buffer session_id;
+  Buffer system_fingerprint;
+  u32 locale;
+  u32 third_party_auth_ticket;
+  u32 third_party_user_id;
+  u32 third_party_id;
+};
+
+
+struct Login_Packet_LoginReply
+{
+  b8 is_logged_in;
+  u32 status;
+  u32 result_code;
+  b8 is_member;
+  b8 is_internal;
+  Buffer namespace_name;
+  u32 account_features_count;
+  struct account_features_s
+  {
+  u32 key;
+  u32 id;
+  b8 active;
+  u32 remaining_count;
+  Buffer raw_data;
+  }* account_features;
+  Buffer application_payload;
+  u32 error_details_count;
+  struct error_details_s
+  {
+  u32 unknown_dword1;
+  Buffer name;
+  Buffer value;
+  }* error_details;
+  Buffer ip_country_code;
+};
+
+
+struct Login_Packet_CharacterCreateRequest
+{
+  u32 server_id;
+  u32 unk_u32;
+  u32 char_payload_size;
+  struct char_payload_s
+  {
+  u8 empire_id;
+  u32 head_type;
+  u32 profile_type;
+  u32 gender;
+  Buffer character_name;
+  } char_payload;
+};
+
+
+struct Login_Packet_CharacterCreateReply
+{
+  u32 status;
+  u64 character_id;
+};
+
+
+struct Login_Packet_CharacterLoginRequest
+{
+  u64 character_id;
+  u32 server_id;
+  u32 status;
+  u32 payload2_size;
+  struct payload2_s
+  {
+  Buffer locale;
+  u32 locale_id;
+  u32 preferred_gateway_id;
+  } payload2;
+};
+
+
+struct Login_Packet_CharacterLoginReply
+{
+  u64 character_id;
+  u32 server_id;
+  u32 last_login;
+  u32 status;
+  u32 login_payload_size;
+  struct login_payload_s
+  {
+  u8 unk_byte_1;
+  u8 unk_byte_2;
+  Buffer server_address;
+  Buffer server_ticket;
+  Buffer encryption_key;
+  u32 soe_protocol_version;
+  u64 character_id;
+  u64 unk_u64;
+  Buffer station_name;
+  Buffer character_name;
+  Buffer unk_str;
+  u64 server_feature_bit;
+  } login_payload;
+};
+
+
+struct Login_Packet_CharacterDeleteRequest
+{
+  u64 character_id;
+};
+
+
+struct Login_Packet_TunnelAppPacketClientToServer
+{
+  u32 server_id;
+  u32 unk1;
+  u32 data_client_size;
+  struct data_client_s
+  {
+  b8 tunnel_op_code;
+  b8 sub_op_code;
+  Buffer character_name;
+  } data_client;
+};
+
+
+struct Login_Packet_TunnelAppPacketServerToClient
+{
+  u32 server_id;
+  u32 unk1;
+  u32 data_server_size;
+  struct data_server_s
+  {
+  u8 tunnel_op_code;
+  u8 sub_op_code;
+  Buffer character_name;
+  Buffer character_name2;
+  u32 status;
+  } data_server;
+};
+
+
+struct Login_Packet_CharacterDeleteReply
+{
+  u64 character_id;
+  u32 status;
+  Buffer payload3;
+};
+
+
+struct Login_Packet_CharacterSelectInfoReply
+{
+  u32 character_status;
+  b8 can_bypass_server_lock;
+  u32 characters_count;
+  struct characters_s
+  {
+  u64 charId;
+  u32 serverId;
+  u64 lastLoginDate;
+  u32 nullField;
+  u32 status;
+  u32 payload_size;
+  struct payload_s
+  {
+  Buffer name;
+  u8 empireId;
+  u32 battleRank;
+  u32 nextBattleRankPercent;
+  u32 headId;
+  u32 actorModelId;
+  u32 gender;
+  u32 profileId;
+  u32 unkDword1;
+  u32 unkDword2;
+  u32 loadoutSlots_count;
+  struct loadoutSlots_s
+  {
+  u32 hotbarSlotId;
+  u32 loadoutId;
+  u32 slotId;
+  u32 itemDefId;
+  u64 loadoutItemGuid;
+  u8 unkByte1;
+  u32 unkDword1;
+  }* loadoutSlots;
+  u32 itemDefinitions_count;
+  struct itemDefinitions_s
+  {
+  u32 ID;
+  u32 item_defs_count;
+  struct item_defs_s
+  {
+  u32 defs_id;
+  u8 bitflags1;
+  u8 bitflags2;
+  u32 name_id;
+  u32 description_id;
+  u32 content_id;
+  u32 image_set_id;
+  u32 tint_id;
+  u32 hud_image_set_id;
+  u32 unk_dword_1;
+  u32 unk_dword_2;
+  u32 cost;
+  u32 item_class;
+  u32 profile_override;
+  Buffer model_name;
+  Buffer texture_alias;
+  u32 gender_usage;
+  u32 item_type;
+  u32 category_id;
+  u32 weapon_trail_effect_id;
+  u32 composite_effect_id;
+  u32 power_rating;
+  u32 min_profile_rank;
+  u32 rarity;
+  u32 activatable_ability_id;
+  u32 activatable_ability_set_id;
+  u32 passive_ability_id;
+  u32 passive_ability_set_id;
+  u32 max_stack_size;
+  u32 min_stack_size;
+  Buffer tint_alias;
+  u32 tint_group_id;
+  u32 member_discount;
+  u32 vip_rank_required;
+  u32 race_set_id;
+  u32 ui_model_camera_id_1;
+  u32 equip_count_max;
+  u32 curreny_type;
+  u32 datasheet_id;
+  u32 item_type_1;
+  u32 skill_set_id;
+  Buffer overlay_texture;
+  Buffer decal_slot;
+  u32 overlay_adjustment;
+  u32 trial_duration_sec;
+  u32 next_trial_delay_sec;
+  u32 client_use_requirement;
+  Buffer override_appearance;
+  u32 override_camera_id;
+  u32 unk_dword_3;
+  u32 unk_dword_4;
+  u32 unk_dword_5;
+  u32 bulk;
+  u32 active_equip_slot_id;
+  u32 passive_equip_slot_id;
+  u32 passive_equip_slot_group_id;
+  u32 unk_dword_6;
+  u32 grinder_reward_set_id;
+  u32 build_bar_group_id;
+  Buffer unk_string_1;
+  b8 unk_bool_1;
+  b8 is_armor;
+  u32 unk_dword_7;
+  u32 param1;
+  u32 param2;
+  u32 param3;
+  Buffer string_param1;
+  u32 ui_model_camera_id_2;
+  u32 unk_dword_8;
+  u32 scrap_value_override;
+  u32 stats_item_def_2_count;
+  struct stats_item_def_2_s
+  {
+  u32 unk_dword_9;
+  u32 stat_id;
+  u8 variabletype8_case;
+  union
+  {
+  struct statValue0_s
+  {
+  u32 base;
+  u32 modifier;
+  } statValue0;
+  struct statValue1_s
+  {
+  f32 base;
+  f32 modifier;
+  } statValue1;
+  } variabletype8;
+  u32 unk_dword_10;
+  }* stats_item_def_2;
+  }* item_defs;
+  }* itemDefinitions;
+  u64 lastUseDate;
+  } payload;
+  }* characters;
+};
+
+
+struct Login_Packet_ServerListReply
+{
+  u32 servers_count;
+  struct servers_s
+  {
+  u32 id;
+  u32 state;
+  b8 is_locked;
+  Buffer name;
+  u32 name_id;
+  Buffer description;
+  u32 description_id;
+  u32 req_feature_id;
+  Buffer server_info;
+  u32 population_level;
+  Buffer population_data;
+  Buffer access_expression;
+  b8 is_access_allowed;
+  }* servers;
+};
+
+
+Buffer pack_login_packet(Arena* arena, void* packet_ptr, Login_Packet_Kind packet_kind)
+{
+  uptr prev_align = arena->alignment;
+  arena->alignment = 1;
+  void* memory_begin = (static_cast<u8*>(arena->memory + arena->cursor));
+  switch (packet_kind)
+  {
+    case Login_Packet_Kind_LoginRequest:
+    {
+      Login_Packet_LoginRequest* packet = static_cast<Login_Packet_LoginRequest*>(packet_ptr);
+      push_u8_little(arena, 0x1);
+      // 5:  string:u32 session_id
+      push_u32_little(arena, (u32)packet->session_id.size);
+      for (uptr session_id_iter = 0; session_id_iter < (uptr)packet->session_id.size; session_id_iter++)
+      {
+        push_u8_little(arena, packet->session_id.data[session_id_iter]);
+      }
+      // 6:  string:u32 system_fingerprint
+      push_u32_little(arena, (u32)packet->system_fingerprint.size);
+      for (uptr system_fingerprint_iter = 0; system_fingerprint_iter < (uptr)packet->system_fingerprint.size; system_fingerprint_iter++)
+      {
+        push_u8_little(arena, packet->system_fingerprint.data[system_fingerprint_iter]);
+      }
+      // 7:  u32 locale
+      push_u32_little(arena, packet->locale);
+      // 8:  u32 third_party_auth_ticket
+      push_u32_little(arena, packet->third_party_auth_ticket);
+      // 9:  u32 third_party_user_id
+      push_u32_little(arena, packet->third_party_user_id);
+      // 10:  u32 third_party_id
+      push_u32_little(arena, packet->third_party_id);
+    } break;
+
+    case Login_Packet_Kind_LoginReply:
+    {
+      Login_Packet_LoginReply* packet = static_cast<Login_Packet_LoginReply*>(packet_ptr);
+      push_u8_little(arena, 0x2);
+      // 13:  b8 is_logged_in
+      push_b8_little(arena, packet->is_logged_in);
+      // 14:  u32 status
+      push_u32_little(arena, packet->status);
+      // 15:  u32 result_code
+      push_u32_little(arena, packet->result_code);
+      // 16:  b8 is_member
+      push_b8_little(arena, packet->is_member);
+      // 17:  b8 is_internal
+      push_b8_little(arena, packet->is_internal);
+      // 18:  string:u32 namespace_name
+      push_u32_little(arena, (u32)packet->namespace_name.size);
+      for (uptr namespace_name_iter = 0; namespace_name_iter < (uptr)packet->namespace_name.size; namespace_name_iter++)
+      {
+        push_u8_little(arena, packet->namespace_name.data[namespace_name_iter]);
+      }
+      // 19:  list:u32 account_features
+      push_u32_little(arena, packet->account_features_count);
+      for (uptr account_features_iter = 0; account_features_iter < packet->account_features_count; account_features_iter++)
+      {
+      // 21:  u32 key
+      push_u32_little(arena, packet->account_features[account_features_iter].key);
+      // 22:  u32 id
+      push_u32_little(arena, packet->account_features[account_features_iter].id);
+      // 23:  b8 active
+      push_b8_little(arena, packet->account_features[account_features_iter].active);
+      // 24:  u32 remaining_count
+      push_u32_little(arena, packet->account_features[account_features_iter].remaining_count);
+      // 25:  string:u32 raw_data
+      push_u32_little(arena, (u32)packet->account_features[account_features_iter].raw_data.size);
+      for (uptr raw_data_iter = 0; raw_data_iter < (uptr)packet->account_features[account_features_iter].raw_data.size; raw_data_iter++)
+      {
+        push_u8_little(arena, packet->account_features[account_features_iter].raw_data.data[raw_data_iter]);
+      }
+    } // account_features
+      // 27:  bytes:u32 application_payload
+      push_u32_little(arena, (u32)packet->application_payload.size);
+      for (uptr application_payload_iter = 0; application_payload_iter < packet->application_payload.size; application_payload_iter++)
+      {
+        push_u8_little(arena, packet->application_payload.data[application_payload_iter]);
+      }
+      // 28:  list:u32 error_details
+      push_u32_little(arena, packet->error_details_count);
+      for (uptr error_details_iter = 0; error_details_iter < packet->error_details_count; error_details_iter++)
+      {
+      // 30:  u32 unknown_dword1
+      push_u32_little(arena, packet->error_details[error_details_iter].unknown_dword1);
+      // 31:  string:u32 name
+      push_u32_little(arena, (u32)packet->error_details[error_details_iter].name.size);
+      for (uptr name_iter = 0; name_iter < (uptr)packet->error_details[error_details_iter].name.size; name_iter++)
+      {
+        push_u8_little(arena, packet->error_details[error_details_iter].name.data[name_iter]);
+      }
+      // 32:  string:u32 value
+      push_u32_little(arena, (u32)packet->error_details[error_details_iter].value.size);
+      for (uptr value_iter = 0; value_iter < (uptr)packet->error_details[error_details_iter].value.size; value_iter++)
+      {
+        push_u8_little(arena, packet->error_details[error_details_iter].value.data[value_iter]);
+      }
+    } // error_details
+      // 34:  string:u32 ip_country_code
+      push_u32_little(arena, (u32)packet->ip_country_code.size);
+      for (uptr ip_country_code_iter = 0; ip_country_code_iter < (uptr)packet->ip_country_code.size; ip_country_code_iter++)
+      {
+        push_u8_little(arena, packet->ip_country_code.data[ip_country_code_iter]);
+      }
+    } break;
+
+    case Login_Packet_Kind_Logout:
+    {
+      push_u8_little(arena, 0x3);
+    } break;
+
+    case Login_Packet_Kind_ForceDisconnect:
+    {
+      push_u8_little(arena, 0x4);
+    } break;
+
+    case Login_Packet_Kind_CharacterCreateRequest:
+    {
+      Login_Packet_CharacterCreateRequest* packet = static_cast<Login_Packet_CharacterCreateRequest*>(packet_ptr);
+      push_u8_little(arena, 0x5);
+      // 41:  u32 server_id
+      push_u32_little(arena, packet->server_id);
+      // 42:  u32 unk_u32
+      push_u32_little(arena, packet->unk_u32);
+      // 44:  stream: char_payload
+      void* char_payload_size_ptr = (void*)((uptr)arena->memory + arena->cursor);
+      arena->cursor += sizeof(u32);
+      u32 will_pack_char_payload = packet->char_payload_size == ~0 ? FALSE : TRUE;
+      if (!will_pack_char_payload)
+      {
+        write_u32_little_at(char_payload_size_ptr, 0);
+      }
+      else
+      {
+      // 47:  u8 empire_id
+      push_u8_little(arena, packet->char_payload.empire_id);
+      // 48:  u32 head_type
+      push_u32_little(arena, packet->char_payload.head_type);
+      // 49:  u32 profile_type
+      push_u32_little(arena, packet->char_payload.profile_type);
+      // 50:  u32 gender
+      push_u32_little(arena, packet->char_payload.gender);
+      // 51:  string:u32 character_name
+      push_u32_little(arena, (u32)packet->char_payload.character_name.size);
+      for (uptr character_name_iter = 0; character_name_iter < (uptr)packet->char_payload.character_name.size; character_name_iter++)
+      {
+        push_u8_little(arena, packet->char_payload.character_name.data[character_name_iter]);
+      }
+      write_u32_little_at(char_payload_size_ptr, (u32)(((uptr)arena->memory + arena->cursor) - ((uptr)char_payload_size_ptr + sizeof(u32))));
+      } // char_payload
+    } break;
+
+    case Login_Packet_Kind_CharacterCreateReply:
+    {
+      Login_Packet_CharacterCreateReply* packet = static_cast<Login_Packet_CharacterCreateReply*>(packet_ptr);
+      push_u8_little(arena, 0x6);
+      // 55:  u32 status
+      push_u32_little(arena, packet->status);
+      // 56:  u64 character_id
+      push_u64_little(arena, packet->character_id);
+    } break;
+
+    case Login_Packet_Kind_CharacterLoginRequest:
+    {
+      Login_Packet_CharacterLoginRequest* packet = static_cast<Login_Packet_CharacterLoginRequest*>(packet_ptr);
+      push_u8_little(arena, 0x7);
+      // 59:  u64 character_id
+      push_u64_little(arena, packet->character_id);
+      // 60:  u32 server_id
+      push_u32_little(arena, packet->server_id);
+      // 61:  u32 status
+      push_u32_little(arena, packet->status);
+      // 63:  stream: payload2
+      void* payload2_size_ptr = (void*)((uptr)arena->memory + arena->cursor);
+      arena->cursor += sizeof(u32);
+      u32 will_pack_payload2 = packet->payload2_size == ~0 ? FALSE : TRUE;
+      if (!will_pack_payload2)
+      {
+        write_u32_little_at(payload2_size_ptr, 0);
+      }
+      else
+      {
+      // 66:  string:u32 locale
+      push_u32_little(arena, (u32)packet->payload2.locale.size);
+      for (uptr locale_iter = 0; locale_iter < (uptr)packet->payload2.locale.size; locale_iter++)
+      {
+        push_u8_little(arena, packet->payload2.locale.data[locale_iter]);
+      }
+      // 67:  u32 locale_id
+      push_u32_little(arena, packet->payload2.locale_id);
+      // 68:  u32 preferred_gateway_id
+      push_u32_little(arena, packet->payload2.preferred_gateway_id);
+      write_u32_little_at(payload2_size_ptr, (u32)(((uptr)arena->memory + arena->cursor) - ((uptr)payload2_size_ptr + sizeof(u32))));
+      } // payload2
+    } break;
+
+    case Login_Packet_Kind_CharacterLoginReply:
+    {
+      Login_Packet_CharacterLoginReply* packet = static_cast<Login_Packet_CharacterLoginReply*>(packet_ptr);
+      push_u8_little(arena, 0x8);
+      // 72:  u64 character_id
+      push_u64_little(arena, packet->character_id);
+      // 73:  u32 server_id
+      push_u32_little(arena, packet->server_id);
+      // 74:  u32 last_login
+      push_u32_little(arena, packet->last_login);
+      // 75:  u32 status
+      push_u32_little(arena, packet->status);
+      // 77:  stream: login_payload
+      void* login_payload_size_ptr = (void*)((uptr)arena->memory + arena->cursor);
+      arena->cursor += sizeof(u32);
+      u32 will_pack_login_payload = packet->login_payload_size == ~0 ? FALSE : TRUE;
+      if (!will_pack_login_payload)
+      {
+        write_u32_little_at(login_payload_size_ptr, 0);
+      }
+      else
+      {
+      // 79:  u8 unk_byte_1
+      push_u8_little(arena, packet->login_payload.unk_byte_1);
+      // 80:  u8 unk_byte_2
+      push_u8_little(arena, packet->login_payload.unk_byte_2);
+      // 81:  string:u32 server_address
+      push_u32_little(arena, (u32)packet->login_payload.server_address.size);
+      for (uptr server_address_iter = 0; server_address_iter < (uptr)packet->login_payload.server_address.size; server_address_iter++)
+      {
+        push_u8_little(arena, packet->login_payload.server_address.data[server_address_iter]);
+      }
+      // 82:  string:u32 server_ticket
+      push_u32_little(arena, (u32)packet->login_payload.server_ticket.size);
+      for (uptr server_ticket_iter = 0; server_ticket_iter < (uptr)packet->login_payload.server_ticket.size; server_ticket_iter++)
+      {
+        push_u8_little(arena, packet->login_payload.server_ticket.data[server_ticket_iter]);
+      }
+      // 83:  bytes:u32 encryption_key
+      push_u32_little(arena, (u32)packet->login_payload.encryption_key.size);
+      for (uptr encryption_key_iter = 0; encryption_key_iter < packet->login_payload.encryption_key.size; encryption_key_iter++)
+      {
+        push_u8_little(arena, packet->login_payload.encryption_key.data[encryption_key_iter]);
+      }
+      // 84:  u32 soe_protocol_version
+      push_u32_little(arena, packet->login_payload.soe_protocol_version);
+      // 85:  u64 character_id
+      push_u64_little(arena, packet->login_payload.character_id);
+      // 86:  u64 unk_u64
+      push_u64_little(arena, packet->login_payload.unk_u64);
+      // 87:  string:u32 station_name
+      push_u32_little(arena, (u32)packet->login_payload.station_name.size);
+      for (uptr station_name_iter = 0; station_name_iter < (uptr)packet->login_payload.station_name.size; station_name_iter++)
+      {
+        push_u8_little(arena, packet->login_payload.station_name.data[station_name_iter]);
+      }
+      // 88:  string:u32 character_name
+      push_u32_little(arena, (u32)packet->login_payload.character_name.size);
+      for (uptr character_name_iter = 0; character_name_iter < (uptr)packet->login_payload.character_name.size; character_name_iter++)
+      {
+        push_u8_little(arena, packet->login_payload.character_name.data[character_name_iter]);
+      }
+      // 89:  string:u32 unk_str
+      push_u32_little(arena, (u32)packet->login_payload.unk_str.size);
+      for (uptr unk_str_iter = 0; unk_str_iter < (uptr)packet->login_payload.unk_str.size; unk_str_iter++)
+      {
+        push_u8_little(arena, packet->login_payload.unk_str.data[unk_str_iter]);
+      }
+      // 90:  u64 server_feature_bit
+      push_u64_little(arena, packet->login_payload.server_feature_bit);
+      write_u32_little_at(login_payload_size_ptr, (u32)(((uptr)arena->memory + arena->cursor) - ((uptr)login_payload_size_ptr + sizeof(u32))));
+      } // login_payload
+    } break;
+
+    case Login_Packet_Kind_CharacterDeleteRequest:
+    {
+      Login_Packet_CharacterDeleteRequest* packet = static_cast<Login_Packet_CharacterDeleteRequest*>(packet_ptr);
+      push_u8_little(arena, 0x9);
+      // 94:  u64 character_id
+      push_u64_little(arena, packet->character_id);
+    } break;
+
+    case Login_Packet_Kind_TunnelAppPacketClientToServer:
+    {
+      Login_Packet_TunnelAppPacketClientToServer* packet = static_cast<Login_Packet_TunnelAppPacketClientToServer*>(packet_ptr);
+      push_u8_little(arena, 0x10);
+      // 97:  u32 server_id
+      push_u32_little(arena, packet->server_id);
+      // 98:  u32 unk1
+      push_u32_little(arena, packet->unk1);
+      // 100:  stream: data_client
+      void* data_client_size_ptr = (void*)((uptr)arena->memory + arena->cursor);
+      arena->cursor += sizeof(u32);
+      u32 will_pack_data_client = packet->data_client_size == ~0 ? FALSE : TRUE;
+      if (!will_pack_data_client)
+      {
+        write_u32_little_at(data_client_size_ptr, 0);
+      }
+      else
+      {
+      // 102:  b8 tunnel_op_code
+      push_b8_little(arena, packet->data_client.tunnel_op_code);
+      // 103:  b8 sub_op_code
+      push_b8_little(arena, packet->data_client.sub_op_code);
+      // 104:  string:u32 character_name
+      push_u32_little(arena, (u32)packet->data_client.character_name.size);
+      for (uptr character_name_iter = 0; character_name_iter < (uptr)packet->data_client.character_name.size; character_name_iter++)
+      {
+        push_u8_little(arena, packet->data_client.character_name.data[character_name_iter]);
+      }
+      write_u32_little_at(data_client_size_ptr, (u32)(((uptr)arena->memory + arena->cursor) - ((uptr)data_client_size_ptr + sizeof(u32))));
+      } // data_client
+    } break;
+
+    case Login_Packet_Kind_TunnelAppPacketServerToClient:
+    {
+      Login_Packet_TunnelAppPacketServerToClient* packet = static_cast<Login_Packet_TunnelAppPacketServerToClient*>(packet_ptr);
+      push_u8_little(arena, 0x11);
+      // 108:  u32 server_id
+      push_u32_little(arena, packet->server_id);
+      // 109:  u32 unk1
+      push_u32_little(arena, packet->unk1);
+      // 111:  stream: data_server
+      void* data_server_size_ptr = (void*)((uptr)arena->memory + arena->cursor);
+      arena->cursor += sizeof(u32);
+      u32 will_pack_data_server = packet->data_server_size == ~0 ? FALSE : TRUE;
+      if (!will_pack_data_server)
+      {
+        write_u32_little_at(data_server_size_ptr, 0);
+      }
+      else
+      {
+      // 113:  u8 tunnel_op_code
+      push_u8_little(arena, packet->data_server.tunnel_op_code);
+      // 114:  u8 sub_op_code
+      push_u8_little(arena, packet->data_server.sub_op_code);
+      // 115:  string:u32 character_name
+      push_u32_little(arena, (u32)packet->data_server.character_name.size);
+      for (uptr character_name_iter = 0; character_name_iter < (uptr)packet->data_server.character_name.size; character_name_iter++)
+      {
+        push_u8_little(arena, packet->data_server.character_name.data[character_name_iter]);
+      }
+      // 116:  string:u32 character_name2
+      push_u32_little(arena, (u32)packet->data_server.character_name2.size);
+      for (uptr character_name2_iter = 0; character_name2_iter < (uptr)packet->data_server.character_name2.size; character_name2_iter++)
+      {
+        push_u8_little(arena, packet->data_server.character_name2.data[character_name2_iter]);
+      }
+      // 117:  u32 status
+      push_u32_little(arena, packet->data_server.status);
+      write_u32_little_at(data_server_size_ptr, (u32)(((uptr)arena->memory + arena->cursor) - ((uptr)data_server_size_ptr + sizeof(u32))));
+      } // data_server
+    } break;
+
+    case Login_Packet_Kind_CharacterTransferRequest:
+    {
+      push_u8_little(arena, 0x12);
+    } break;
+
+    case Login_Packet_Kind_CharacterTransferReply:
+    {
+      push_u8_little(arena, 0x13);
+    } break;
+
+    case Login_Packet_Kind_CharacterDeleteReply:
+    {
+      Login_Packet_CharacterDeleteReply* packet = static_cast<Login_Packet_CharacterDeleteReply*>(packet_ptr);
+      push_u8_little(arena, 0xa);
+      // 125:  u64 character_id
+      push_u64_little(arena, packet->character_id);
+      // 126:  u32 status
+      push_u32_little(arena, packet->status);
+      // 127:  bytes:u32 payload3
+      push_u32_little(arena, (u32)packet->payload3.size);
+      for (uptr payload3_iter = 0; payload3_iter < packet->payload3.size; payload3_iter++)
+      {
+        push_u8_little(arena, packet->payload3.data[payload3_iter]);
+      }
+    } break;
+
+    case Login_Packet_Kind_CharacterSelectInfoRequest:
+    {
+      push_u8_little(arena, 0xb);
+    } break;
+
+    case Login_Packet_Kind_CharacterSelectInfoReply:
+    {
+      Login_Packet_CharacterSelectInfoReply* packet = static_cast<Login_Packet_CharacterSelectInfoReply*>(packet_ptr);
+      push_u8_little(arena, 0xc);
+      // 132:  u32 character_status
+      push_u32_little(arena, packet->character_status);
+      // 133:  b8 can_bypass_server_lock
+      push_b8_little(arena, packet->can_bypass_server_lock);
+      // 135:  list:u32 characters
+      push_u32_little(arena, packet->characters_count);
+      for (uptr characters_iter = 0; characters_iter < packet->characters_count; characters_iter++)
+      {
+      // 137:  u64 charId
+      push_u64_little(arena, packet->characters[characters_iter].charId);
+      // 138:  u32 serverId
+      push_u32_little(arena, packet->characters[characters_iter].serverId);
+      // 139:  u64 lastLoginDate
+      push_u64_little(arena, packet->characters[characters_iter].lastLoginDate);
+      // 140:  u32 nullField
+      push_u32_little(arena, packet->characters[characters_iter].nullField);
+      // 141:  u32 status
+      push_u32_little(arena, packet->characters[characters_iter].status);
+      // 143:  stream: payload
+      void* payload_size_ptr = (void*)((uptr)arena->memory + arena->cursor);
+      arena->cursor += sizeof(u32);
+      u32 will_pack_payload = packet->characters[characters_iter].payload_size == ~0 ? FALSE : TRUE;
+      if (!will_pack_payload)
+      {
+        write_u32_little_at(payload_size_ptr, 0);
+      }
+      else
+      {
+      // 145:  string:u32 name
+      push_u32_little(arena, (u32)packet->characters[characters_iter].payload.name.size);
+      for (uptr name_iter = 0; name_iter < (uptr)packet->characters[characters_iter].payload.name.size; name_iter++)
+      {
+        push_u8_little(arena, packet->characters[characters_iter].payload.name.data[name_iter]);
+      }
+      // 146:  u8 empireId
+      push_u8_little(arena, packet->characters[characters_iter].payload.empireId);
+      // 147:  u32 battleRank
+      push_u32_little(arena, packet->characters[characters_iter].payload.battleRank);
+      // 148:  u32 nextBattleRankPercent
+      push_u32_little(arena, packet->characters[characters_iter].payload.nextBattleRankPercent);
+      // 149:  u32 headId
+      push_u32_little(arena, packet->characters[characters_iter].payload.headId);
+      // 150:  u32 actorModelId
+      push_u32_little(arena, packet->characters[characters_iter].payload.actorModelId);
+      // 151:  u32 gender
+      push_u32_little(arena, packet->characters[characters_iter].payload.gender);
+      // 152:  u32 profileId
+      push_u32_little(arena, packet->characters[characters_iter].payload.profileId);
+      // 153:  u32 unkDword1
+      push_u32_little(arena, packet->characters[characters_iter].payload.unkDword1);
+      // 154:  u32 unkDword2
+      push_u32_little(arena, packet->characters[characters_iter].payload.unkDword2);
+      // 156:  list:u32 loadoutSlots
+      push_u32_little(arena, packet->characters[characters_iter].payload.loadoutSlots_count);
+      for (uptr loadoutSlots_iter = 0; loadoutSlots_iter < packet->characters[characters_iter].payload.loadoutSlots_count; loadoutSlots_iter++)
+      {
+      // 158:  u32 hotbarSlotId
+      push_u32_little(arena, packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].hotbarSlotId);
+      // 159:  u32 loadoutId
+      push_u32_little(arena, packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].loadoutId);
+      // 160:  u32 slotId
+      push_u32_little(arena, packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].slotId);
+      // 161:  u32 itemDefId
+      push_u32_little(arena, packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].itemDefId);
+      // 162:  u64 loadoutItemGuid
+      push_u64_little(arena, packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].loadoutItemGuid);
+      // 163:  u8 unkByte1
+      push_u8_little(arena, packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].unkByte1);
+      // 164:  u32 unkDword1
+      push_u32_little(arena, packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].unkDword1);
+    } // loadoutSlots
+      // 167:  list:u32 itemDefinitions
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions_count);
+      for (uptr itemDefinitions_iter = 0; itemDefinitions_iter < packet->characters[characters_iter].payload.itemDefinitions_count; itemDefinitions_iter++)
+      {
+      // 169:  u32 ID
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].ID);
+      // 171:  list:u32 item_defs
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs_count);
+      for (uptr item_defs_iter = 0; item_defs_iter < packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs_count; item_defs_iter++)
+      {
+      // 173:  u32 defs_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].defs_id);
+      // 175:  u8 bitflags1
+      push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].bitflags1);
+      // 185:  u8 bitflags2
+      push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].bitflags2);
+      // 195:  u32 name_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].name_id);
+      // 196:  u32 description_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].description_id);
+      // 197:  u32 content_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].content_id);
+      // 198:  u32 image_set_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].image_set_id);
+      // 199:  u32 tint_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_id);
+      // 200:  u32 hud_image_set_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].hud_image_set_id);
+      // 201:  u32 unk_dword_1
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_1);
+      // 202:  u32 unk_dword_2
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_2);
+      // 203:  u32 cost
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].cost);
+      // 204:  u32 item_class
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].item_class);
+      // 205:  u32 profile_override
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].profile_override);
+      // 206:  string:u32 model_name
+      push_u32_little(arena, (u32)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].model_name.size);
+      for (uptr model_name_iter = 0; model_name_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].model_name.size; model_name_iter++)
+      {
+        push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].model_name.data[model_name_iter]);
+      }
+      // 207:  string:u32 texture_alias
+      push_u32_little(arena, (u32)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].texture_alias.size);
+      for (uptr texture_alias_iter = 0; texture_alias_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].texture_alias.size; texture_alias_iter++)
+      {
+        push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].texture_alias.data[texture_alias_iter]);
+      }
+      // 208:  u32 gender_usage
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].gender_usage);
+      // 209:  u32 item_type
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].item_type);
+      // 210:  u32 category_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].category_id);
+      // 211:  u32 weapon_trail_effect_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].weapon_trail_effect_id);
+      // 212:  u32 composite_effect_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].composite_effect_id);
+      // 213:  u32 power_rating
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].power_rating);
+      // 214:  u32 min_profile_rank
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].min_profile_rank);
+      // 215:  u32 rarity
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].rarity);
+      // 216:  u32 activatable_ability_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].activatable_ability_id);
+      // 217:  u32 activatable_ability_set_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].activatable_ability_set_id);
+      // 218:  u32 passive_ability_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].passive_ability_id);
+      // 219:  u32 passive_ability_set_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].passive_ability_set_id);
+      // 220:  u32 max_stack_size
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].max_stack_size);
+      // 221:  u32 min_stack_size
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].min_stack_size);
+      // 222:  string:u32 tint_alias
+      push_u32_little(arena, (u32)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_alias.size);
+      for (uptr tint_alias_iter = 0; tint_alias_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_alias.size; tint_alias_iter++)
+      {
+        push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_alias.data[tint_alias_iter]);
+      }
+      // 223:  u32 tint_group_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_group_id);
+      // 224:  u32 member_discount
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].member_discount);
+      // 225:  u32 vip_rank_required
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].vip_rank_required);
+      // 226:  u32 race_set_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].race_set_id);
+      // 227:  u32 ui_model_camera_id_1
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].ui_model_camera_id_1);
+      // 228:  u32 equip_count_max
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].equip_count_max);
+      // 229:  u32 curreny_type
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].curreny_type);
+      // 230:  u32 datasheet_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].datasheet_id);
+      // 231:  u32 item_type_1
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].item_type_1);
+      // 232:  u32 skill_set_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].skill_set_id);
+      // 233:  string:u32 overlay_texture
+      push_u32_little(arena, (u32)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_texture.size);
+      for (uptr overlay_texture_iter = 0; overlay_texture_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_texture.size; overlay_texture_iter++)
+      {
+        push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_texture.data[overlay_texture_iter]);
+      }
+      // 234:  string:u32 decal_slot
+      push_u32_little(arena, (u32)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].decal_slot.size);
+      for (uptr decal_slot_iter = 0; decal_slot_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].decal_slot.size; decal_slot_iter++)
+      {
+        push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].decal_slot.data[decal_slot_iter]);
+      }
+      // 235:  u32 overlay_adjustment
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_adjustment);
+      // 236:  u32 trial_duration_sec
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].trial_duration_sec);
+      // 237:  u32 next_trial_delay_sec
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].next_trial_delay_sec);
+      // 238:  u32 client_use_requirement
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].client_use_requirement);
+      // 239:  string:u32 override_appearance
+      push_u32_little(arena, (u32)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_appearance.size);
+      for (uptr override_appearance_iter = 0; override_appearance_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_appearance.size; override_appearance_iter++)
+      {
+        push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_appearance.data[override_appearance_iter]);
+      }
+      // 240:  u32 override_camera_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_camera_id);
+      // 241:  u32 unk_dword_3
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_3);
+      // 242:  u32 unk_dword_4
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_4);
+      // 243:  u32 unk_dword_5
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_5);
+      // 244:  u32 bulk
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].bulk);
+      // 245:  u32 active_equip_slot_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].active_equip_slot_id);
+      // 246:  u32 passive_equip_slot_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].passive_equip_slot_id);
+      // 247:  u32 passive_equip_slot_group_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].passive_equip_slot_group_id);
+      // 248:  u32 unk_dword_6
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_6);
+      // 249:  u32 grinder_reward_set_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].grinder_reward_set_id);
+      // 250:  u32 build_bar_group_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].build_bar_group_id);
+      // 251:  string:u32 unk_string_1
+      push_u32_little(arena, (u32)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_string_1.size);
+      for (uptr unk_string_1_iter = 0; unk_string_1_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_string_1.size; unk_string_1_iter++)
+      {
+        push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_string_1.data[unk_string_1_iter]);
+      }
+      // 252:  b8 unk_bool_1
+      push_b8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_bool_1);
+      // 253:  b8 is_armor
+      push_b8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].is_armor);
+      // 254:  u32 unk_dword_7
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_7);
+      // 255:  u32 param1
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].param1);
+      // 256:  u32 param2
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].param2);
+      // 257:  u32 param3
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].param3);
+      // 258:  string:u32 string_param1
+      push_u32_little(arena, (u32)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].string_param1.size);
+      for (uptr string_param1_iter = 0; string_param1_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].string_param1.size; string_param1_iter++)
+      {
+        push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].string_param1.data[string_param1_iter]);
+      }
+      // 259:  u32 ui_model_camera_id_2
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].ui_model_camera_id_2);
+      // 260:  u32 unk_dword_8
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_8);
+      // 261:  u32 scrap_value_override
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].scrap_value_override);
+      // 263:  list:u32 stats_item_def_2
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2_count);
+      for (uptr stats_item_def_2_iter = 0; stats_item_def_2_iter < packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2_count; stats_item_def_2_iter++)
+      {
+      // 265:  u32 unk_dword_9
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].unk_dword_9);
+      // 266:  u32 stat_id
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].stat_id);
+      // 268:  switch: variabletype8
+      push_u8_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8_case);
+      switch(packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8_case)
+      {
+      case 0:
+      {
+      // 271:  u32 base
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base);
+      // 272:  u32 modifier
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier);
+      } break; // statValue0
+      case 1:
+      {
+      // 275:  f32 base
+      push_f32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base);
+      // 276:  f32 modifier
+      push_f32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier);
+      } break; // statValue1
+      } // variabletype8
+      // 279:  u32 unk_dword_10
+      push_u32_little(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].unk_dword_10);
+    } // stats_item_def_2
+    } // item_defs
+    } // itemDefinitions
+      // 283:  u64 lastUseDate
+      push_u64_little(arena, packet->characters[characters_iter].payload.lastUseDate);
+      write_u32_little_at(payload_size_ptr, (u32)(((uptr)arena->memory + arena->cursor) - ((uptr)payload_size_ptr + sizeof(u32))));
+      } // payload
+    } // characters
+    } break;
+
+    case Login_Packet_Kind_ServerListRequest:
+    {
+      push_u8_little(arena, 0xd);
+    } break;
+
+    case Login_Packet_Kind_ServerListReply:
+    {
+      Login_Packet_ServerListReply* packet = static_cast<Login_Packet_ServerListReply*>(packet_ptr);
+      push_u8_little(arena, 0xe);
+      // 290:  list:u32 servers
+      push_u32_little(arena, packet->servers_count);
+      for (uptr servers_iter = 0; servers_iter < packet->servers_count; servers_iter++)
+      {
+      // 292:  u32 id
+      push_u32_little(arena, packet->servers[servers_iter].id);
+      // 293:  u32 state
+      push_u32_little(arena, packet->servers[servers_iter].state);
+      // 294:  b8 is_locked
+      push_b8_little(arena, packet->servers[servers_iter].is_locked);
+      // 295:  string:u32 name
+      push_u32_little(arena, (u32)packet->servers[servers_iter].name.size);
+      for (uptr name_iter = 0; name_iter < (uptr)packet->servers[servers_iter].name.size; name_iter++)
+      {
+        push_u8_little(arena, packet->servers[servers_iter].name.data[name_iter]);
+      }
+      // 296:  u32 name_id
+      push_u32_little(arena, packet->servers[servers_iter].name_id);
+      // 297:  string:u32 description
+      push_u32_little(arena, (u32)packet->servers[servers_iter].description.size);
+      for (uptr description_iter = 0; description_iter < (uptr)packet->servers[servers_iter].description.size; description_iter++)
+      {
+        push_u8_little(arena, packet->servers[servers_iter].description.data[description_iter]);
+      }
+      // 298:  u32 description_id
+      push_u32_little(arena, packet->servers[servers_iter].description_id);
+      // 299:  u32 req_feature_id
+      push_u32_little(arena, packet->servers[servers_iter].req_feature_id);
+      // 300:  string:u32 server_info
+      push_u32_little(arena, (u32)packet->servers[servers_iter].server_info.size);
+      for (uptr server_info_iter = 0; server_info_iter < (uptr)packet->servers[servers_iter].server_info.size; server_info_iter++)
+      {
+        push_u8_little(arena, packet->servers[servers_iter].server_info.data[server_info_iter]);
+      }
+      // 301:  u32 population_level
+      push_u32_little(arena, packet->servers[servers_iter].population_level);
+      // 302:  string:u32 population_data
+      push_u32_little(arena, (u32)packet->servers[servers_iter].population_data.size);
+      for (uptr population_data_iter = 0; population_data_iter < (uptr)packet->servers[servers_iter].population_data.size; population_data_iter++)
+      {
+        push_u8_little(arena, packet->servers[servers_iter].population_data.data[population_data_iter]);
+      }
+      // 303:  string:u32 access_expression
+      push_u32_little(arena, (u32)packet->servers[servers_iter].access_expression.size);
+      for (uptr access_expression_iter = 0; access_expression_iter < (uptr)packet->servers[servers_iter].access_expression.size; access_expression_iter++)
+      {
+        push_u8_little(arena, packet->servers[servers_iter].access_expression.data[access_expression_iter]);
+      }
+      // 304:  b8 is_access_allowed
+      push_b8_little(arena, packet->servers[servers_iter].is_access_allowed);
+    } // servers
+    } break;
+
+    case Login_Packet_Kind_ServerUpdate:
+    {
+      push_u8_little(arena, 0xf);
+    } break;
+
+    default:
+    {
+      std::cout << "packing not handled";
+    }
+  }
+
+  arena->alignment = prev_align;
+  Buffer result{};
+  result.data = static_cast<char*>(memory_begin);
+  result.size = reinterpret_cast<uptr>((static_cast<u8*>(arena->memory + arena->cursor) - *static_cast<uptr*>(memory_begin)));
+  return result;
 }
 
-// string texture_alias
-packet->item_defs[item_defs_iter].texture_alias_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->item_defs[item_defs_iter].texture_alias = reinterpret_cast<char*>(arena_push_size(arena, packet->item_defs[item_defs_iter].texture_alias_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->item_defs[item_defs_iter].texture_alias_length);
-for (u32 texture_alias_iter = 0; texture_alias_iter < packet->item_defs[item_defs_iter].texture_alias_length; texture_alias_iter++)
+uptr unpack_login_packet(Arena* arena, Stream* stream, void* result_ptr, Login_Packet_Kind packet_kind)
 {
-packet->item_defs[item_defs_iter].texture_alias[texture_alias_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 gender_usage
-packet->item_defs[item_defs_iter].gender_usage = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- gender_usage            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].gender_usage, (uint64_t)packet->item_defs[item_defs_iter].gender_usage, (double)packet->item_defs[item_defs_iter].gender_usage);
-
-// u32 item_type
-packet->item_defs[item_defs_iter].item_type = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- item_type               \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].item_type, (uint64_t)packet->item_defs[item_defs_iter].item_type, (double)packet->item_defs[item_defs_iter].item_type);
-
-// u32 category_id
-packet->item_defs[item_defs_iter].category_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- category_id             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].category_id, (uint64_t)packet->item_defs[item_defs_iter].category_id, (double)packet->item_defs[item_defs_iter].category_id);
-
-// u32 weapon_trail_effect_id
-packet->item_defs[item_defs_iter].weapon_trail_effect_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- weapon_trail_effect_id  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].weapon_trail_effect_id, (uint64_t)packet->item_defs[item_defs_iter].weapon_trail_effect_id, (double)packet->item_defs[item_defs_iter].weapon_trail_effect_id);
-
-// u32 composite_effect_id
-packet->item_defs[item_defs_iter].composite_effect_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- composite_effect_id     \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].composite_effect_id, (uint64_t)packet->item_defs[item_defs_iter].composite_effect_id, (double)packet->item_defs[item_defs_iter].composite_effect_id);
-
-// u32 power_rating
-packet->item_defs[item_defs_iter].power_rating = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- power_rating            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].power_rating, (uint64_t)packet->item_defs[item_defs_iter].power_rating, (double)packet->item_defs[item_defs_iter].power_rating);
-
-// u32 min_profile_rank
-packet->item_defs[item_defs_iter].min_profile_rank = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- min_profile_rank        \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].min_profile_rank, (uint64_t)packet->item_defs[item_defs_iter].min_profile_rank, (double)packet->item_defs[item_defs_iter].min_profile_rank);
-
-// u32 rarity
-packet->item_defs[item_defs_iter].rarity = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- rarity                  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].rarity, (uint64_t)packet->item_defs[item_defs_iter].rarity, (double)packet->item_defs[item_defs_iter].rarity);
-
-// u32 activatable_ability_id
-packet->item_defs[item_defs_iter].activatable_ability_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- activatable_ability_id  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].activatable_ability_id, (uint64_t)packet->item_defs[item_defs_iter].activatable_ability_id, (double)packet->item_defs[item_defs_iter].activatable_ability_id);
-
-// u32 activatable_ability_set_id
-packet->item_defs[item_defs_iter].activatable_ability_set_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- activatable_ability_set_id\t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].activatable_ability_set_id, (uint64_t)packet->item_defs[item_defs_iter].activatable_ability_set_id, (double)packet->item_defs[item_defs_iter].activatable_ability_set_id);
-
-// u32 passive_ability_id
-packet->item_defs[item_defs_iter].passive_ability_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- passive_ability_id      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].passive_ability_id, (uint64_t)packet->item_defs[item_defs_iter].passive_ability_id, (double)packet->item_defs[item_defs_iter].passive_ability_id);
-
-// u32 passive_ability_set_id
-packet->item_defs[item_defs_iter].passive_ability_set_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- passive_ability_set_id  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].passive_ability_set_id, (uint64_t)packet->item_defs[item_defs_iter].passive_ability_set_id, (double)packet->item_defs[item_defs_iter].passive_ability_set_id);
-
-// u32 max_stack_size
-packet->item_defs[item_defs_iter].max_stack_size = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- max_stack_size          \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].max_stack_size, (uint64_t)packet->item_defs[item_defs_iter].max_stack_size, (double)packet->item_defs[item_defs_iter].max_stack_size);
-
-// u32 min_stack_size
-packet->item_defs[item_defs_iter].min_stack_size = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- min_stack_size          \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].min_stack_size, (uint64_t)packet->item_defs[item_defs_iter].min_stack_size, (double)packet->item_defs[item_defs_iter].min_stack_size);
-
-// string tint_alias
-packet->item_defs[item_defs_iter].tint_alias_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->item_defs[item_defs_iter].tint_alias = reinterpret_cast<char*>(arena_push_size(arena, packet->item_defs[item_defs_iter].tint_alias_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->item_defs[item_defs_iter].tint_alias_length);
-for (u32 tint_alias_iter = 0; tint_alias_iter < packet->item_defs[item_defs_iter].tint_alias_length; tint_alias_iter++)
-{
-packet->item_defs[item_defs_iter].tint_alias[tint_alias_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 tint_group_id
-packet->item_defs[item_defs_iter].tint_group_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- tint_group_id           \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].tint_group_id, (uint64_t)packet->item_defs[item_defs_iter].tint_group_id, (double)packet->item_defs[item_defs_iter].tint_group_id);
-
-// u32 member_discount
-packet->item_defs[item_defs_iter].member_discount = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- member_discount         \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].member_discount, (uint64_t)packet->item_defs[item_defs_iter].member_discount, (double)packet->item_defs[item_defs_iter].member_discount);
-
-// u32 vip_rank_required
-packet->item_defs[item_defs_iter].vip_rank_required = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- vip_rank_required       \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].vip_rank_required, (uint64_t)packet->item_defs[item_defs_iter].vip_rank_required, (double)packet->item_defs[item_defs_iter].vip_rank_required);
-
-// u32 race_set_id
-packet->item_defs[item_defs_iter].race_set_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- race_set_id             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].race_set_id, (uint64_t)packet->item_defs[item_defs_iter].race_set_id, (double)packet->item_defs[item_defs_iter].race_set_id);
-
-// u32 ui_model_camera_id_1
-packet->item_defs[item_defs_iter].ui_model_camera_id_1 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- ui_model_camera_id_1    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].ui_model_camera_id_1, (uint64_t)packet->item_defs[item_defs_iter].ui_model_camera_id_1, (double)packet->item_defs[item_defs_iter].ui_model_camera_id_1);
-
-// u32 equip_count_max
-packet->item_defs[item_defs_iter].equip_count_max = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- equip_count_max         \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].equip_count_max, (uint64_t)packet->item_defs[item_defs_iter].equip_count_max, (double)packet->item_defs[item_defs_iter].equip_count_max);
-
-// i32 curreny_type
-packet->item_defs[item_defs_iter].curreny_type = endian_read_i32_little(data + offset);
-offset += sizeof(i32);
-printf("-- curreny_type            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].curreny_type, (uint64_t)packet->item_defs[item_defs_iter].curreny_type, (double)packet->item_defs[item_defs_iter].curreny_type);
-
-// u32 datasheet_id
-packet->item_defs[item_defs_iter].datasheet_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- datasheet_id            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].datasheet_id, (uint64_t)packet->item_defs[item_defs_iter].datasheet_id, (double)packet->item_defs[item_defs_iter].datasheet_id);
-
-// u32 item_type_1
-packet->item_defs[item_defs_iter].item_type_1 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- item_type_1             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].item_type_1, (uint64_t)packet->item_defs[item_defs_iter].item_type_1, (double)packet->item_defs[item_defs_iter].item_type_1);
-
-// u32 skill_set_id
-packet->item_defs[item_defs_iter].skill_set_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- skill_set_id            \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].skill_set_id, (uint64_t)packet->item_defs[item_defs_iter].skill_set_id, (double)packet->item_defs[item_defs_iter].skill_set_id);
-
-// string overlay_texture
-packet->item_defs[item_defs_iter].overlay_texture_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->item_defs[item_defs_iter].overlay_texture = reinterpret_cast<char*>(arena_push_size(arena, packet->item_defs[item_defs_iter].overlay_texture_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->item_defs[item_defs_iter].overlay_texture_length);
-for (u32 overlay_texture_iter = 0; overlay_texture_iter < packet->item_defs[item_defs_iter].overlay_texture_length; overlay_texture_iter++)
-{
-packet->item_defs[item_defs_iter].overlay_texture[overlay_texture_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// string decal_slot
-packet->item_defs[item_defs_iter].decal_slot_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->item_defs[item_defs_iter].decal_slot = reinterpret_cast<char*>(arena_push_size(arena, packet->item_defs[item_defs_iter].decal_slot_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->item_defs[item_defs_iter].decal_slot_length);
-for (u32 decal_slot_iter = 0; decal_slot_iter < packet->item_defs[item_defs_iter].decal_slot_length; decal_slot_iter++)
-{
-packet->item_defs[item_defs_iter].decal_slot[decal_slot_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 overlay_adjustment
-packet->item_defs[item_defs_iter].overlay_adjustment = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- overlay_adjustment      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].overlay_adjustment, (uint64_t)packet->item_defs[item_defs_iter].overlay_adjustment, (double)packet->item_defs[item_defs_iter].overlay_adjustment);
-
-// u32 trial_duration_sec
-packet->item_defs[item_defs_iter].trial_duration_sec = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- trial_duration_sec      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].trial_duration_sec, (uint64_t)packet->item_defs[item_defs_iter].trial_duration_sec, (double)packet->item_defs[item_defs_iter].trial_duration_sec);
-
-// u32 next_trial_delay_sec
-packet->item_defs[item_defs_iter].next_trial_delay_sec = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- next_trial_delay_sec    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].next_trial_delay_sec, (uint64_t)packet->item_defs[item_defs_iter].next_trial_delay_sec, (double)packet->item_defs[item_defs_iter].next_trial_delay_sec);
-
-// u32 client_use_requirement
-packet->item_defs[item_defs_iter].client_use_requirement = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- client_use_requirement  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].client_use_requirement, (uint64_t)packet->item_defs[item_defs_iter].client_use_requirement, (double)packet->item_defs[item_defs_iter].client_use_requirement);
-
-// string override_appearance
-packet->item_defs[item_defs_iter].override_appearance_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->item_defs[item_defs_iter].override_appearance = reinterpret_cast<char*>(arena_push_size(arena, packet->item_defs[item_defs_iter].override_appearance_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->item_defs[item_defs_iter].override_appearance_length);
-for (u32 override_appearance_iter = 0; override_appearance_iter < packet->item_defs[item_defs_iter].override_appearance_length; override_appearance_iter++)
-{
-packet->item_defs[item_defs_iter].override_appearance[override_appearance_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 override_camera_id
-packet->item_defs[item_defs_iter].override_camera_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- override_camera_id      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].override_camera_id, (uint64_t)packet->item_defs[item_defs_iter].override_camera_id, (double)packet->item_defs[item_defs_iter].override_camera_id);
-
-// u32 unk_dword_3
-packet->item_defs[item_defs_iter].unk_dword_3 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_3             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_3, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_3, (double)packet->item_defs[item_defs_iter].unk_dword_3);
-
-// u32 unk_dword_4
-packet->item_defs[item_defs_iter].unk_dword_4 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_4             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_4, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_4, (double)packet->item_defs[item_defs_iter].unk_dword_4);
-
-// u32 unk_dword_5
-packet->item_defs[item_defs_iter].unk_dword_5 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_5             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_5, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_5, (double)packet->item_defs[item_defs_iter].unk_dword_5);
-
-// u32 bulk
-packet->item_defs[item_defs_iter].bulk = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- bulk                    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].bulk, (uint64_t)packet->item_defs[item_defs_iter].bulk, (double)packet->item_defs[item_defs_iter].bulk);
-
-// u32 active_equip_slot_id
-packet->item_defs[item_defs_iter].active_equip_slot_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- active_equip_slot_id    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].active_equip_slot_id, (uint64_t)packet->item_defs[item_defs_iter].active_equip_slot_id, (double)packet->item_defs[item_defs_iter].active_equip_slot_id);
-
-// u32 passive_equip_slot_id
-packet->item_defs[item_defs_iter].passive_equip_slot_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- passive_equip_slot_id   \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].passive_equip_slot_id, (uint64_t)packet->item_defs[item_defs_iter].passive_equip_slot_id, (double)packet->item_defs[item_defs_iter].passive_equip_slot_id);
-
-// u32 passive_equip_slot_group_id
-packet->item_defs[item_defs_iter].passive_equip_slot_group_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- passive_equip_slot_group_id\t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].passive_equip_slot_group_id, (uint64_t)packet->item_defs[item_defs_iter].passive_equip_slot_group_id, (double)packet->item_defs[item_defs_iter].passive_equip_slot_group_id);
-
-// u32 unk_dword_6
-packet->item_defs[item_defs_iter].unk_dword_6 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_6             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_6, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_6, (double)packet->item_defs[item_defs_iter].unk_dword_6);
-
-// u32 grinder_reward_set_id
-packet->item_defs[item_defs_iter].grinder_reward_set_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- grinder_reward_set_id   \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].grinder_reward_set_id, (uint64_t)packet->item_defs[item_defs_iter].grinder_reward_set_id, (double)packet->item_defs[item_defs_iter].grinder_reward_set_id);
-
-// u32 build_bar_group_id
-packet->item_defs[item_defs_iter].build_bar_group_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- build_bar_group_id      \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].build_bar_group_id, (uint64_t)packet->item_defs[item_defs_iter].build_bar_group_id, (double)packet->item_defs[item_defs_iter].build_bar_group_id);
-
-// string unk_string_1
-packet->item_defs[item_defs_iter].unk_string_1_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->item_defs[item_defs_iter].unk_string_1 = reinterpret_cast<char*>(arena_push_size(arena, packet->item_defs[item_defs_iter].unk_string_1_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->item_defs[item_defs_iter].unk_string_1_length);
-for (u32 unk_string_1_iter = 0; unk_string_1_iter < packet->item_defs[item_defs_iter].unk_string_1_length; unk_string_1_iter++)
-{
-packet->item_defs[item_defs_iter].unk_string_1[unk_string_1_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// b8 unk_bool_1
-packet->item_defs[item_defs_iter].unk_bool_1 = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- unk_bool_1              \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_bool_1, (uint64_t)packet->item_defs[item_defs_iter].unk_bool_1, (double)packet->item_defs[item_defs_iter].unk_bool_1);
-
-// b8 is_armor
-packet->item_defs[item_defs_iter].is_armor = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- is_armor                \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].is_armor, (uint64_t)packet->item_defs[item_defs_iter].is_armor, (double)packet->item_defs[item_defs_iter].is_armor);
-
-// u32 unk_dword_7
-packet->item_defs[item_defs_iter].unk_dword_7 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_7             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_7, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_7, (double)packet->item_defs[item_defs_iter].unk_dword_7);
-
-// u32 param1
-packet->item_defs[item_defs_iter].param1 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- param1                  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].param1, (uint64_t)packet->item_defs[item_defs_iter].param1, (double)packet->item_defs[item_defs_iter].param1);
-
-// u32 param2
-packet->item_defs[item_defs_iter].param2 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- param2                  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].param2, (uint64_t)packet->item_defs[item_defs_iter].param2, (double)packet->item_defs[item_defs_iter].param2);
-
-// u32 param3
-packet->item_defs[item_defs_iter].param3 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- param3                  \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].param3, (uint64_t)packet->item_defs[item_defs_iter].param3, (double)packet->item_defs[item_defs_iter].param3);
-
-// string string_param1
-packet->item_defs[item_defs_iter].string_param1_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->item_defs[item_defs_iter].string_param1 = reinterpret_cast<char*>(arena_push_size(arena, packet->item_defs[item_defs_iter].string_param1_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->item_defs[item_defs_iter].string_param1_length);
-for (u32 string_param1_iter = 0; string_param1_iter < packet->item_defs[item_defs_iter].string_param1_length; string_param1_iter++)
-{
-packet->item_defs[item_defs_iter].string_param1[string_param1_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 ui_model_camera_id_2
-packet->item_defs[item_defs_iter].ui_model_camera_id_2 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- ui_model_camera_id_2    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].ui_model_camera_id_2, (uint64_t)packet->item_defs[item_defs_iter].ui_model_camera_id_2, (double)packet->item_defs[item_defs_iter].ui_model_camera_id_2);
-
-// u32 unk_dword_8
-packet->item_defs[item_defs_iter].unk_dword_8 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unk_dword_8             \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].unk_dword_8, (uint64_t)packet->item_defs[item_defs_iter].unk_dword_8, (double)packet->item_defs[item_defs_iter].unk_dword_8);
-
-// i32 scrap_value_override
-packet->item_defs[item_defs_iter].scrap_value_override = endian_read_i32_little(data + offset);
-offset += sizeof(i32);
-printf("-- scrap_value_override    \t%lld\t%llxh\t%f\n", (i64)packet->item_defs[item_defs_iter].scrap_value_override, (uint64_t)packet->item_defs[item_defs_iter].scrap_value_override, (double)packet->item_defs[item_defs_iter].scrap_value_override);
-
-} // item_defs
-
-// list loadoutSlots
-packet->loadoutSlots_count = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->loadoutSlots = static_cast<Login_Packet_CharacterSelectInfoReply::loadoutSlots_s*>(arena_push_size(arena, packet->loadoutSlots_count * sizeof(packet->loadoutSlots[0])));
-printf("-- LIST_COUNT              \t%d\n", packet->loadoutSlots_count);
-for (u32 loadoutSlots_iter = 0; loadoutSlots_iter < packet->loadoutSlots_count; loadoutSlots_iter++)
-{
-// u32 hotbarSlotId
-packet->loadoutSlots[loadoutSlots_iter].hotbarSlotId = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- hotbarSlotId            \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].hotbarSlotId, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].hotbarSlotId, (double)packet->loadoutSlots[loadoutSlots_iter].hotbarSlotId);
-
-// u32 loadoutId
-packet->loadoutSlots[loadoutSlots_iter].loadoutId = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- loadoutId               \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].loadoutId, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].loadoutId, (double)packet->loadoutSlots[loadoutSlots_iter].loadoutId);
-
-// u32 slotId
-packet->loadoutSlots[loadoutSlots_iter].slotId = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- slotId                  \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].slotId, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].slotId, (double)packet->loadoutSlots[loadoutSlots_iter].slotId);
-
-// u32 itemDefId
-packet->loadoutSlots[loadoutSlots_iter].itemDefId = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- itemDefId               \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].itemDefId, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].itemDefId, (double)packet->loadoutSlots[loadoutSlots_iter].itemDefId);
-
-// u64 loadoutItemGuid
-packet->loadoutSlots[loadoutSlots_iter].loadoutItemGuid = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- loadoutItemGuid         \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].loadoutItemGuid, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].loadoutItemGuid, (double)packet->loadoutSlots[loadoutSlots_iter].loadoutItemGuid);
-
-// u8 unkByte1
-packet->loadoutSlots[loadoutSlots_iter].unkByte1 = endian_read_u8_little(data + offset);
-offset += sizeof(u8);
-printf("-- unkByte1                \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].unkByte1, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].unkByte1, (double)packet->loadoutSlots[loadoutSlots_iter].unkByte1);
-
-// u32 unkDword1
-packet->loadoutSlots[loadoutSlots_iter].unkDword1 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unkDword1               \t%lld\t%llxh\t%f\n", (i64)packet->loadoutSlots[loadoutSlots_iter].unkDword1, (uint64_t)packet->loadoutSlots[loadoutSlots_iter].unkDword1, (double)packet->loadoutSlots[loadoutSlots_iter].unkDword1);
-
-} // loadoutSlots
-
-// list characters
-packet->characters_count = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->characters = static_cast<Login_Packet_CharacterSelectInfoReply::characters_s*>(arena_push_size(arena, packet->characters_count * sizeof(packet->characters[0])));
-printf("-- LIST_COUNT              \t%d\n", packet->characters_count);
-for (u32 characters_iter = 0; characters_iter < packet->characters_count; characters_iter++)
-{
-// u64 charId
-packet->characters[characters_iter].charId = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- charId                  \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].charId, (uint64_t)packet->characters[characters_iter].charId, (double)packet->characters[characters_iter].charId);
-
-// u32 serverId
-packet->characters[characters_iter].serverId = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- serverId                \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].serverId, (uint64_t)packet->characters[characters_iter].serverId, (double)packet->characters[characters_iter].serverId);
-
-// u64 lastLoginDate
-packet->characters[characters_iter].lastLoginDate = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- lastLoginDate           \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].lastLoginDate, (uint64_t)packet->characters[characters_iter].lastLoginDate, (double)packet->characters[characters_iter].lastLoginDate);
-
-// u32 nullField
-packet->characters[characters_iter].nullField = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- nullField               \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].nullField, (uint64_t)packet->characters[characters_iter].nullField, (double)packet->characters[characters_iter].nullField);
-
-// u32 status
-packet->characters[characters_iter].status = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- status                  \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].status, (uint64_t)packet->characters[characters_iter].status, (double)packet->characters[characters_iter].status);
-
-// stream payload
-packet->characters[characters_iter].payload_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->characters[characters_iter].payload = static_cast<Login_Packet_CharacterSelectInfoReply::characters_s::payload_s*>(arena_push_size(arena, packet->characters[characters_iter].payload_length * sizeof(packet->characters[characters_iter].payload[0])));
-printf("-- STREAM_LENGTH           \t%d\n", packet->characters[characters_iter].payload_length);
-for (u32 payload_iter = 0; payload_iter < (packet->characters[characters_iter].payload_length > (u32)0 ? (u32)1 : (u32)0); payload_iter++)
-{
-// string name
-packet->characters[characters_iter].payload[payload_iter].name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->characters[characters_iter].payload[payload_iter].name = reinterpret_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload[payload_iter].name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->characters[characters_iter].payload[payload_iter].name_length);
-for (u32 name_iter = 0; name_iter < packet->characters[characters_iter].payload[payload_iter].name_length; name_iter++)
-{
-packet->characters[characters_iter].payload[payload_iter].name[name_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u8 empireId
-packet->characters[characters_iter].payload[payload_iter].empireId = endian_read_u8_little(data + offset);
-offset += sizeof(u8);
-printf("-- empireId                \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].empireId, (uint64_t)packet->characters[characters_iter].payload[payload_iter].empireId, (double)packet->characters[characters_iter].payload[payload_iter].empireId);
-
-// u32 battleRank
-packet->characters[characters_iter].payload[payload_iter].battleRank = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- battleRank              \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].battleRank, (uint64_t)packet->characters[characters_iter].payload[payload_iter].battleRank, (double)packet->characters[characters_iter].payload[payload_iter].battleRank);
-
-// u32 nextBattleRankPercent
-packet->characters[characters_iter].payload[payload_iter].nextBattleRankPercent = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- nextBattleRankPercent   \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].nextBattleRankPercent, (uint64_t)packet->characters[characters_iter].payload[payload_iter].nextBattleRankPercent, (double)packet->characters[characters_iter].payload[payload_iter].nextBattleRankPercent);
-
-// u32 headId
-packet->characters[characters_iter].payload[payload_iter].headId = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- headId                  \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].headId, (uint64_t)packet->characters[characters_iter].payload[payload_iter].headId, (double)packet->characters[characters_iter].payload[payload_iter].headId);
-
-// u32 actorModelId
-packet->characters[characters_iter].payload[payload_iter].actorModelId = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- actorModelId            \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].actorModelId, (uint64_t)packet->characters[characters_iter].payload[payload_iter].actorModelId, (double)packet->characters[characters_iter].payload[payload_iter].actorModelId);
-
-// u32 gender
-packet->characters[characters_iter].payload[payload_iter].gender = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- gender                  \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].gender, (uint64_t)packet->characters[characters_iter].payload[payload_iter].gender, (double)packet->characters[characters_iter].payload[payload_iter].gender);
-
-// u32 profileId
-packet->characters[characters_iter].payload[payload_iter].profileId = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- profileId               \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].profileId, (uint64_t)packet->characters[characters_iter].payload[payload_iter].profileId, (double)packet->characters[characters_iter].payload[payload_iter].profileId);
-
-// u32 unkDword1
-packet->characters[characters_iter].payload[payload_iter].unkDword1 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unkDword1               \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].unkDword1, (uint64_t)packet->characters[characters_iter].payload[payload_iter].unkDword1, (double)packet->characters[characters_iter].payload[payload_iter].unkDword1);
-
-// u32 unkDword2
-packet->characters[characters_iter].payload[payload_iter].unkDword2 = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- unkDword2               \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].unkDword2, (uint64_t)packet->characters[characters_iter].payload[payload_iter].unkDword2, (double)packet->characters[characters_iter].payload[payload_iter].unkDword2);
-
-// u64 lastUseDate
-packet->characters[characters_iter].payload[payload_iter].lastUseDate = endian_read_u64_little(data + offset);
-offset += sizeof(u64);
-printf("-- lastUseDate             \t%lld\t%llxh\t%f\n", (i64)packet->characters[characters_iter].payload[payload_iter].lastUseDate, (uint64_t)packet->characters[characters_iter].payload[payload_iter].lastUseDate, (double)packet->characters[characters_iter].payload[payload_iter].lastUseDate);
-
-} // payload
-
-} // characters
-
-} break;
-
-case Login_Packet_Kind_ServerListReply:
-{
-printf("[*] Unpacking ServerListReply...\n");
-Login_Packet_ServerListReply* packet = static_cast<Login_Packet_ServerListReply*>(packet_ptr);
-
-// list servers
-packet->servers_count = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->servers = static_cast<Login_Packet_ServerListReply::servers_s*>(arena_push_size(arena, packet->servers_count * sizeof(packet->servers[0])));
-printf("-- LIST_COUNT              \t%d\n", packet->servers_count);
-for (u32 servers_iter = 0; servers_iter < packet->servers_count; servers_iter++)
-{
-// u32 id
-packet->servers[servers_iter].id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- id                      \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].id, (uint64_t)packet->servers[servers_iter].id, (double)packet->servers[servers_iter].id);
-
-// u32 state
-packet->servers[servers_iter].state = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- state                   \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].state, (uint64_t)packet->servers[servers_iter].state, (double)packet->servers[servers_iter].state);
-
-// b8 is_locked
-packet->servers[servers_iter].is_locked = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- is_locked               \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].is_locked, (uint64_t)packet->servers[servers_iter].is_locked, (double)packet->servers[servers_iter].is_locked);
-
-// string name
-packet->servers[servers_iter].name_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->servers[servers_iter].name = reinterpret_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].name_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->servers[servers_iter].name_length);
-for (u32 name_iter = 0; name_iter < packet->servers[servers_iter].name_length; name_iter++)
-{
-packet->servers[servers_iter].name[name_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 name_id
-packet->servers[servers_iter].name_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- name_id                 \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].name_id, (uint64_t)packet->servers[servers_iter].name_id, (double)packet->servers[servers_iter].name_id);
-
-// string description
-packet->servers[servers_iter].description_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->servers[servers_iter].description = reinterpret_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].description_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->servers[servers_iter].description_length);
-for (u32 description_iter = 0; description_iter < packet->servers[servers_iter].description_length; description_iter++)
-{
-packet->servers[servers_iter].description[description_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 description_id
-packet->servers[servers_iter].description_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- description_id          \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].description_id, (uint64_t)packet->servers[servers_iter].description_id, (double)packet->servers[servers_iter].description_id);
-
-// u32 req_feature_id
-packet->servers[servers_iter].req_feature_id = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- req_feature_id          \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].req_feature_id, (uint64_t)packet->servers[servers_iter].req_feature_id, (double)packet->servers[servers_iter].req_feature_id);
-
-// string server_info
-packet->servers[servers_iter].server_info_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->servers[servers_iter].server_info = reinterpret_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].server_info_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->servers[servers_iter].server_info_length);
-for (u32 server_info_iter = 0; server_info_iter < packet->servers[servers_iter].server_info_length; server_info_iter++)
-{
-packet->servers[servers_iter].server_info[server_info_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// u32 population_level
-packet->servers[servers_iter].population_level = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-printf("-- population_level        \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].population_level, (uint64_t)packet->servers[servers_iter].population_level, (double)packet->servers[servers_iter].population_level);
-
-// string population_data
-packet->servers[servers_iter].population_data_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->servers[servers_iter].population_data = reinterpret_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].population_data_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->servers[servers_iter].population_data_length);
-for (u32 population_data_iter = 0; population_data_iter < packet->servers[servers_iter].population_data_length; population_data_iter++)
-{
-packet->servers[servers_iter].population_data[population_data_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// string access_expression
-packet->servers[servers_iter].access_expression_length = endian_read_u32_little(data + offset);
-offset += sizeof(u32);
-packet->servers[servers_iter].access_expression = reinterpret_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].access_expression_length));
-printf("-- STRING_LENGTH           \t%d\n", packet->servers[servers_iter].access_expression_length);
-for (u32 access_expression_iter = 0; access_expression_iter < packet->servers[servers_iter].access_expression_length; access_expression_iter++)
-{
-packet->servers[servers_iter].access_expression[access_expression_iter] = *(i8*)((uptr)data + offset);
-offset++;
-}
-
-// b8 is_access_allowed
-packet->servers[servers_iter].is_access_allowed = endian_read_b8_little(data + offset);
-offset += sizeof(b8);
-printf("-- is_access_allowed       \t%lld\t%llxh\t%f\n", (i64)packet->servers[servers_iter].is_access_allowed, (uint64_t)packet->servers[servers_iter].is_access_allowed, (double)packet->servers[servers_iter].is_access_allowed);
-
-} // servers
-
-} break;
-
-default:
-{
-printf("Unpacking not implemented\n");
-}
-}
+  uptr cursor_begin = stream->cursor;
+  switch (packet_kind)
+  {
+    case Login_Packet_Kind_LoginRequest:
+    {
+      Login_Packet_LoginRequest* packet = static_cast<Login_Packet_LoginRequest*>(result_ptr);
+      // 5:  string:u32 session_id
+      packet->session_id.size = read_u32_little(stream);
+      packet->session_id.data = static_cast<char*>(arena_push_size(arena, packet->session_id.size));
+      for (uptr session_id_iter = 0; session_id_iter < (uptr)packet->session_id.size; session_id_iter++)
+      {
+        packet->session_id.data[session_id_iter] = read_u8_little(stream);
+      }
+      // 6:  string:u32 system_fingerprint
+      packet->system_fingerprint.size = read_u32_little(stream);
+      packet->system_fingerprint.data = static_cast<char*>(arena_push_size(arena, packet->system_fingerprint.size));
+      for (uptr system_fingerprint_iter = 0; system_fingerprint_iter < (uptr)packet->system_fingerprint.size; system_fingerprint_iter++)
+      {
+        packet->system_fingerprint.data[system_fingerprint_iter] = read_u8_little(stream);
+      }
+      // 7:  u32 locale
+      packet->locale = read_u32_little(stream);
+      // 8:  u32 third_party_auth_ticket
+      packet->third_party_auth_ticket = read_u32_little(stream);
+      // 9:  u32 third_party_user_id
+      packet->third_party_user_id = read_u32_little(stream);
+      // 10:  u32 third_party_id
+      packet->third_party_id = read_u32_little(stream);
+    } break;
+
+    case Login_Packet_Kind_LoginReply:
+    {
+      Login_Packet_LoginReply* packet = static_cast<Login_Packet_LoginReply*>(result_ptr);
+      // 13:  b8 is_logged_in
+      packet->is_logged_in = read_b8_little(stream);
+      // 14:  u32 status
+      packet->status = read_u32_little(stream);
+      // 15:  u32 result_code
+      packet->result_code = read_u32_little(stream);
+      // 16:  b8 is_member
+      packet->is_member = read_b8_little(stream);
+      // 17:  b8 is_internal
+      packet->is_internal = read_b8_little(stream);
+      // 18:  string:u32 namespace_name
+      packet->namespace_name.size = read_u32_little(stream);
+      packet->namespace_name.data = static_cast<char*>(arena_push_size(arena, packet->namespace_name.size));
+      for (uptr namespace_name_iter = 0; namespace_name_iter < (uptr)packet->namespace_name.size; namespace_name_iter++)
+      {
+        packet->namespace_name.data[namespace_name_iter] = read_u8_little(stream);
+      }
+      // 19:  list:u32 account_features
+      packet->account_features_count = read_u32_little(stream);
+      packet->account_features = static_cast<account_features_s>(arena_push_size(arena, sizeof(account_features_s) * packet->account_features_count));
+      for (uptr account_features_iter = 0; account_features_iter < packet->account_features_count; account_features_iter++)
+      {
+      // 21:  u32 key
+      packet->account_features[account_features_iter].key = read_u32_little(stream);
+      // 22:  u32 id
+      packet->account_features[account_features_iter].id = read_u32_little(stream);
+      // 23:  b8 active
+      packet->account_features[account_features_iter].active = read_b8_little(stream);
+      // 24:  u32 remaining_count
+      packet->account_features[account_features_iter].remaining_count = read_u32_little(stream);
+      // 25:  string:u32 raw_data
+      packet->account_features[account_features_iter].raw_data.size = read_u32_little(stream);
+      packet->account_features[account_features_iter].raw_data.data = static_cast<char*>(arena_push_size(arena, packet->account_features[account_features_iter].raw_data.size));
+      for (uptr raw_data_iter = 0; raw_data_iter < (uptr)packet->account_features[account_features_iter].raw_data.size; raw_data_iter++)
+      {
+        packet->account_features[account_features_iter].raw_data.data[raw_data_iter] = read_u8_little(stream);
+      }
+    } // account_features
+      // 27:  bytes:u32 application_payload
+      packet->application_payload.size = read_u32_little(stream);
+			 packet->application_payload.data = static_cast<char*>(arena_push_size(arena, packet->application_payload.size));
+      for (uptr application_payload_iter = 0; application_payload_iter < packet->application_payload.size; application_payload_iter++)
+      {
+        packet->application_payload.data[application_payload_iter] = read_u8_little(stream);
+      }
+      // 28:  list:u32 error_details
+      packet->error_details_count = read_u32_little(stream);
+      packet->error_details = static_cast<error_details_s>(arena_push_size(arena, sizeof(error_details_s) * packet->error_details_count));
+      for (uptr error_details_iter = 0; error_details_iter < packet->error_details_count; error_details_iter++)
+      {
+      // 30:  u32 unknown_dword1
+      packet->error_details[error_details_iter].unknown_dword1 = read_u32_little(stream);
+      // 31:  string:u32 name
+      packet->error_details[error_details_iter].name.size = read_u32_little(stream);
+      packet->error_details[error_details_iter].name.data = static_cast<char*>(arena_push_size(arena, packet->error_details[error_details_iter].name.size));
+      for (uptr name_iter = 0; name_iter < (uptr)packet->error_details[error_details_iter].name.size; name_iter++)
+      {
+        packet->error_details[error_details_iter].name.data[name_iter] = read_u8_little(stream);
+      }
+      // 32:  string:u32 value
+      packet->error_details[error_details_iter].value.size = read_u32_little(stream);
+      packet->error_details[error_details_iter].value.data = static_cast<char*>(arena_push_size(arena, packet->error_details[error_details_iter].value.size));
+      for (uptr value_iter = 0; value_iter < (uptr)packet->error_details[error_details_iter].value.size; value_iter++)
+      {
+        packet->error_details[error_details_iter].value.data[value_iter] = read_u8_little(stream);
+      }
+    } // error_details
+      // 34:  string:u32 ip_country_code
+      packet->ip_country_code.size = read_u32_little(stream);
+      packet->ip_country_code.data = static_cast<char*>(arena_push_size(arena, packet->ip_country_code.size));
+      for (uptr ip_country_code_iter = 0; ip_country_code_iter < (uptr)packet->ip_country_code.size; ip_country_code_iter++)
+      {
+        packet->ip_country_code.data[ip_country_code_iter] = read_u8_little(stream);
+      }
+    } break;
+
+    case Login_Packet_Kind_CharacterCreateRequest:
+    {
+      Login_Packet_CharacterCreateRequest* packet = static_cast<Login_Packet_CharacterCreateRequest*>(result_ptr);
+      // 41:  u32 server_id
+      packet->server_id = read_u32_little(stream);
+      // 42:  u32 unk_u32
+      packet->unk_u32 = read_u32_little(stream);
+      // 44:  stream: char_payload
+      packet->char_payload_size = read_u32_little(stream);
+      if ((packet->char_payload_size = packet->char_payload_size ? packet->char_payload_size : ~((u32)0)) != ~((u32)0))
+      {
+      // 47:  u8 empire_id
+      packet->char_payload.empire_id = read_u8_little(stream);
+      // 48:  u32 head_type
+      packet->char_payload.head_type = read_u32_little(stream);
+      // 49:  u32 profile_type
+      packet->char_payload.profile_type = read_u32_little(stream);
+      // 50:  u32 gender
+      packet->char_payload.gender = read_u32_little(stream);
+      // 51:  string:u32 character_name
+      packet->char_payload.character_name.size = read_u32_little(stream);
+      packet->char_payload.character_name.data = static_cast<char*>(arena_push_size(arena, packet->char_payload.character_name.size));
+      for (uptr character_name_iter = 0; character_name_iter < (uptr)packet->char_payload.character_name.size; character_name_iter++)
+      {
+        packet->char_payload.character_name.data[character_name_iter] = read_u8_little(stream);
+      }
+      }
+    } break;
+
+    case Login_Packet_Kind_CharacterCreateReply:
+    {
+      Login_Packet_CharacterCreateReply* packet = static_cast<Login_Packet_CharacterCreateReply*>(result_ptr);
+      // 55:  u32 status
+      packet->status = read_u32_little(stream);
+      // 56:  u64 character_id
+      packet->character_id = read_u64_little(stream);
+    } break;
+
+    case Login_Packet_Kind_CharacterLoginRequest:
+    {
+      Login_Packet_CharacterLoginRequest* packet = static_cast<Login_Packet_CharacterLoginRequest*>(result_ptr);
+      // 59:  u64 character_id
+      packet->character_id = read_u64_little(stream);
+      // 60:  u32 server_id
+      packet->server_id = read_u32_little(stream);
+      // 61:  u32 status
+      packet->status = read_u32_little(stream);
+      // 63:  stream: payload2
+      packet->payload2_size = read_u32_little(stream);
+      if ((packet->payload2_size = packet->payload2_size ? packet->payload2_size : ~((u32)0)) != ~((u32)0))
+      {
+      // 66:  string:u32 locale
+      packet->payload2.locale.size = read_u32_little(stream);
+      packet->payload2.locale.data = static_cast<char*>(arena_push_size(arena, packet->payload2.locale.size));
+      for (uptr locale_iter = 0; locale_iter < (uptr)packet->payload2.locale.size; locale_iter++)
+      {
+        packet->payload2.locale.data[locale_iter] = read_u8_little(stream);
+      }
+      // 67:  u32 locale_id
+      packet->payload2.locale_id = read_u32_little(stream);
+      // 68:  u32 preferred_gateway_id
+      packet->payload2.preferred_gateway_id = read_u32_little(stream);
+      }
+    } break;
+
+    case Login_Packet_Kind_CharacterLoginReply:
+    {
+      Login_Packet_CharacterLoginReply* packet = static_cast<Login_Packet_CharacterLoginReply*>(result_ptr);
+      // 72:  u64 character_id
+      packet->character_id = read_u64_little(stream);
+      // 73:  u32 server_id
+      packet->server_id = read_u32_little(stream);
+      // 74:  u32 last_login
+      packet->last_login = read_u32_little(stream);
+      // 75:  u32 status
+      packet->status = read_u32_little(stream);
+      // 77:  stream: login_payload
+      packet->login_payload_size = read_u32_little(stream);
+      if ((packet->login_payload_size = packet->login_payload_size ? packet->login_payload_size : ~((u32)0)) != ~((u32)0))
+      {
+      // 79:  u8 unk_byte_1
+      packet->login_payload.unk_byte_1 = read_u8_little(stream);
+      // 80:  u8 unk_byte_2
+      packet->login_payload.unk_byte_2 = read_u8_little(stream);
+      // 81:  string:u32 server_address
+      packet->login_payload.server_address.size = read_u32_little(stream);
+      packet->login_payload.server_address.data = static_cast<char*>(arena_push_size(arena, packet->login_payload.server_address.size));
+      for (uptr server_address_iter = 0; server_address_iter < (uptr)packet->login_payload.server_address.size; server_address_iter++)
+      {
+        packet->login_payload.server_address.data[server_address_iter] = read_u8_little(stream);
+      }
+      // 82:  string:u32 server_ticket
+      packet->login_payload.server_ticket.size = read_u32_little(stream);
+      packet->login_payload.server_ticket.data = static_cast<char*>(arena_push_size(arena, packet->login_payload.server_ticket.size));
+      for (uptr server_ticket_iter = 0; server_ticket_iter < (uptr)packet->login_payload.server_ticket.size; server_ticket_iter++)
+      {
+        packet->login_payload.server_ticket.data[server_ticket_iter] = read_u8_little(stream);
+      }
+      // 83:  bytes:u32 encryption_key
+      packet->login_payload.encryption_key.size = read_u32_little(stream);
+			 packet->login_payload.encryption_key.data = static_cast<char*>(arena_push_size(arena, packet->login_payload.encryption_key.size));
+      for (uptr encryption_key_iter = 0; encryption_key_iter < packet->login_payload.encryption_key.size; encryption_key_iter++)
+      {
+        packet->login_payload.encryption_key.data[encryption_key_iter] = read_u8_little(stream);
+      }
+      // 84:  u32 soe_protocol_version
+      packet->login_payload.soe_protocol_version = read_u32_little(stream);
+      // 85:  u64 character_id
+      packet->login_payload.character_id = read_u64_little(stream);
+      // 86:  u64 unk_u64
+      packet->login_payload.unk_u64 = read_u64_little(stream);
+      // 87:  string:u32 station_name
+      packet->login_payload.station_name.size = read_u32_little(stream);
+      packet->login_payload.station_name.data = static_cast<char*>(arena_push_size(arena, packet->login_payload.station_name.size));
+      for (uptr station_name_iter = 0; station_name_iter < (uptr)packet->login_payload.station_name.size; station_name_iter++)
+      {
+        packet->login_payload.station_name.data[station_name_iter] = read_u8_little(stream);
+      }
+      // 88:  string:u32 character_name
+      packet->login_payload.character_name.size = read_u32_little(stream);
+      packet->login_payload.character_name.data = static_cast<char*>(arena_push_size(arena, packet->login_payload.character_name.size));
+      for (uptr character_name_iter = 0; character_name_iter < (uptr)packet->login_payload.character_name.size; character_name_iter++)
+      {
+        packet->login_payload.character_name.data[character_name_iter] = read_u8_little(stream);
+      }
+      // 89:  string:u32 unk_str
+      packet->login_payload.unk_str.size = read_u32_little(stream);
+      packet->login_payload.unk_str.data = static_cast<char*>(arena_push_size(arena, packet->login_payload.unk_str.size));
+      for (uptr unk_str_iter = 0; unk_str_iter < (uptr)packet->login_payload.unk_str.size; unk_str_iter++)
+      {
+        packet->login_payload.unk_str.data[unk_str_iter] = read_u8_little(stream);
+      }
+      // 90:  u64 server_feature_bit
+      packet->login_payload.server_feature_bit = read_u64_little(stream);
+      }
+    } break;
+
+    case Login_Packet_Kind_CharacterDeleteRequest:
+    {
+      Login_Packet_CharacterDeleteRequest* packet = static_cast<Login_Packet_CharacterDeleteRequest*>(result_ptr);
+      // 94:  u64 character_id
+      packet->character_id = read_u64_little(stream);
+    } break;
+
+    case Login_Packet_Kind_TunnelAppPacketClientToServer:
+    {
+      Login_Packet_TunnelAppPacketClientToServer* packet = static_cast<Login_Packet_TunnelAppPacketClientToServer*>(result_ptr);
+      // 97:  u32 server_id
+      packet->server_id = read_u32_little(stream);
+      // 98:  u32 unk1
+      packet->unk1 = read_u32_little(stream);
+      // 100:  stream: data_client
+      packet->data_client_size = read_u32_little(stream);
+      if ((packet->data_client_size = packet->data_client_size ? packet->data_client_size : ~((u32)0)) != ~((u32)0))
+      {
+      // 102:  b8 tunnel_op_code
+      packet->data_client.tunnel_op_code = read_b8_little(stream);
+      // 103:  b8 sub_op_code
+      packet->data_client.sub_op_code = read_b8_little(stream);
+      // 104:  string:u32 character_name
+      packet->data_client.character_name.size = read_u32_little(stream);
+      packet->data_client.character_name.data = static_cast<char*>(arena_push_size(arena, packet->data_client.character_name.size));
+      for (uptr character_name_iter = 0; character_name_iter < (uptr)packet->data_client.character_name.size; character_name_iter++)
+      {
+        packet->data_client.character_name.data[character_name_iter] = read_u8_little(stream);
+      }
+      }
+    } break;
+
+    case Login_Packet_Kind_TunnelAppPacketServerToClient:
+    {
+      Login_Packet_TunnelAppPacketServerToClient* packet = static_cast<Login_Packet_TunnelAppPacketServerToClient*>(result_ptr);
+      // 108:  u32 server_id
+      packet->server_id = read_u32_little(stream);
+      // 109:  u32 unk1
+      packet->unk1 = read_u32_little(stream);
+      // 111:  stream: data_server
+      packet->data_server_size = read_u32_little(stream);
+      if ((packet->data_server_size = packet->data_server_size ? packet->data_server_size : ~((u32)0)) != ~((u32)0))
+      {
+      // 113:  u8 tunnel_op_code
+      packet->data_server.tunnel_op_code = read_u8_little(stream);
+      // 114:  u8 sub_op_code
+      packet->data_server.sub_op_code = read_u8_little(stream);
+      // 115:  string:u32 character_name
+      packet->data_server.character_name.size = read_u32_little(stream);
+      packet->data_server.character_name.data = static_cast<char*>(arena_push_size(arena, packet->data_server.character_name.size));
+      for (uptr character_name_iter = 0; character_name_iter < (uptr)packet->data_server.character_name.size; character_name_iter++)
+      {
+        packet->data_server.character_name.data[character_name_iter] = read_u8_little(stream);
+      }
+      // 116:  string:u32 character_name2
+      packet->data_server.character_name2.size = read_u32_little(stream);
+      packet->data_server.character_name2.data = static_cast<char*>(arena_push_size(arena, packet->data_server.character_name2.size));
+      for (uptr character_name2_iter = 0; character_name2_iter < (uptr)packet->data_server.character_name2.size; character_name2_iter++)
+      {
+        packet->data_server.character_name2.data[character_name2_iter] = read_u8_little(stream);
+      }
+      // 117:  u32 status
+      packet->data_server.status = read_u32_little(stream);
+      }
+    } break;
+
+    case Login_Packet_Kind_CharacterDeleteReply:
+    {
+      Login_Packet_CharacterDeleteReply* packet = static_cast<Login_Packet_CharacterDeleteReply*>(result_ptr);
+      // 125:  u64 character_id
+      packet->character_id = read_u64_little(stream);
+      // 126:  u32 status
+      packet->status = read_u32_little(stream);
+      // 127:  bytes:u32 payload3
+      packet->payload3.size = read_u32_little(stream);
+			 packet->payload3.data = static_cast<char*>(arena_push_size(arena, packet->payload3.size));
+      for (uptr payload3_iter = 0; payload3_iter < packet->payload3.size; payload3_iter++)
+      {
+        packet->payload3.data[payload3_iter] = read_u8_little(stream);
+      }
+    } break;
+
+    case Login_Packet_Kind_CharacterSelectInfoReply:
+    {
+      Login_Packet_CharacterSelectInfoReply* packet = static_cast<Login_Packet_CharacterSelectInfoReply*>(result_ptr);
+      // 132:  u32 character_status
+      packet->character_status = read_u32_little(stream);
+      // 133:  b8 can_bypass_server_lock
+      packet->can_bypass_server_lock = read_b8_little(stream);
+      // 135:  list:u32 characters
+      packet->characters_count = read_u32_little(stream);
+      packet->characters = static_cast<characters_s>(arena_push_size(arena, sizeof(characters_s) * packet->characters_count));
+      for (uptr characters_iter = 0; characters_iter < packet->characters_count; characters_iter++)
+      {
+      // 137:  u64 charId
+      packet->characters[characters_iter].charId = read_u64_little(stream);
+      // 138:  u32 serverId
+      packet->characters[characters_iter].serverId = read_u32_little(stream);
+      // 139:  u64 lastLoginDate
+      packet->characters[characters_iter].lastLoginDate = read_u64_little(stream);
+      // 140:  u32 nullField
+      packet->characters[characters_iter].nullField = read_u32_little(stream);
+      // 141:  u32 status
+      packet->characters[characters_iter].status = read_u32_little(stream);
+      // 143:  stream: payload
+      packet->characters[characters_iter].payload_size = read_u32_little(stream);
+      if ((packet->characters[characters_iter].payload_size = packet->characters[characters_iter].payload_size ? packet->characters[characters_iter].payload_size : ~((u32)0)) != ~((u32)0))
+      {
+      // 145:  string:u32 name
+      packet->characters[characters_iter].payload.name.size = read_u32_little(stream);
+      packet->characters[characters_iter].payload.name.data = static_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload.name.size));
+      for (uptr name_iter = 0; name_iter < (uptr)packet->characters[characters_iter].payload.name.size; name_iter++)
+      {
+        packet->characters[characters_iter].payload.name.data[name_iter] = read_u8_little(stream);
+      }
+      // 146:  u8 empireId
+      packet->characters[characters_iter].payload.empireId = read_u8_little(stream);
+      // 147:  u32 battleRank
+      packet->characters[characters_iter].payload.battleRank = read_u32_little(stream);
+      // 148:  u32 nextBattleRankPercent
+      packet->characters[characters_iter].payload.nextBattleRankPercent = read_u32_little(stream);
+      // 149:  u32 headId
+      packet->characters[characters_iter].payload.headId = read_u32_little(stream);
+      // 150:  u32 actorModelId
+      packet->characters[characters_iter].payload.actorModelId = read_u32_little(stream);
+      // 151:  u32 gender
+      packet->characters[characters_iter].payload.gender = read_u32_little(stream);
+      // 152:  u32 profileId
+      packet->characters[characters_iter].payload.profileId = read_u32_little(stream);
+      // 153:  u32 unkDword1
+      packet->characters[characters_iter].payload.unkDword1 = read_u32_little(stream);
+      // 154:  u32 unkDword2
+      packet->characters[characters_iter].payload.unkDword2 = read_u32_little(stream);
+      // 156:  list:u32 loadoutSlots
+      packet->characters[characters_iter].payload.loadoutSlots_count = read_u32_little(stream);
+      packet->characters[characters_iter].payload.loadoutSlots = static_cast<loadoutSlots_s>(arena_push_size(arena, sizeof(loadoutSlots_s) * packet->characters[characters_iter].payload.loadoutSlots_count));
+      for (uptr loadoutSlots_iter = 0; loadoutSlots_iter < packet->characters[characters_iter].payload.loadoutSlots_count; loadoutSlots_iter++)
+      {
+      // 158:  u32 hotbarSlotId
+      packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].hotbarSlotId = read_u32_little(stream);
+      // 159:  u32 loadoutId
+      packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].loadoutId = read_u32_little(stream);
+      // 160:  u32 slotId
+      packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].slotId = read_u32_little(stream);
+      // 161:  u32 itemDefId
+      packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].itemDefId = read_u32_little(stream);
+      // 162:  u64 loadoutItemGuid
+      packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].loadoutItemGuid = read_u64_little(stream);
+      // 163:  u8 unkByte1
+      packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].unkByte1 = read_u8_little(stream);
+      // 164:  u32 unkDword1
+      packet->characters[characters_iter].payload.loadoutSlots[loadoutSlots_iter].unkDword1 = read_u32_little(stream);
+    } // loadoutSlots
+      // 167:  list:u32 itemDefinitions
+      packet->characters[characters_iter].payload.itemDefinitions_count = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions = static_cast<itemDefinitions_s>(arena_push_size(arena, sizeof(itemDefinitions_s) * packet->characters[characters_iter].payload.itemDefinitions_count));
+      for (uptr itemDefinitions_iter = 0; itemDefinitions_iter < packet->characters[characters_iter].payload.itemDefinitions_count; itemDefinitions_iter++)
+      {
+      // 169:  u32 ID
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].ID = read_u32_little(stream);
+      // 171:  list:u32 item_defs
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs_count = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs = static_cast<item_defs_s>(arena_push_size(arena, sizeof(item_defs_s) * packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs_count));
+      for (uptr item_defs_iter = 0; item_defs_iter < packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs_count; item_defs_iter++)
+      {
+      // 173:  u32 defs_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].defs_id = read_u32_little(stream);
+      // 175:  u8 bitflags1
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].bitflags1 = read_u8_little(stream);
+      // 185:  u8 bitflags2
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].bitflags2 = read_u8_little(stream);
+      // 195:  u32 name_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].name_id = read_u32_little(stream);
+      // 196:  u32 description_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].description_id = read_u32_little(stream);
+      // 197:  u32 content_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].content_id = read_u32_little(stream);
+      // 198:  u32 image_set_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].image_set_id = read_u32_little(stream);
+      // 199:  u32 tint_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_id = read_u32_little(stream);
+      // 200:  u32 hud_image_set_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].hud_image_set_id = read_u32_little(stream);
+      // 201:  u32 unk_dword_1
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_1 = read_u32_little(stream);
+      // 202:  u32 unk_dword_2
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_2 = read_u32_little(stream);
+      // 203:  u32 cost
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].cost = read_u32_little(stream);
+      // 204:  u32 item_class
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].item_class = read_u32_little(stream);
+      // 205:  u32 profile_override
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].profile_override = read_u32_little(stream);
+      // 206:  string:u32 model_name
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].model_name.size = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].model_name.data = static_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].model_name.size));
+      for (uptr model_name_iter = 0; model_name_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].model_name.size; model_name_iter++)
+      {
+        packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].model_name.data[model_name_iter] = read_u8_little(stream);
+      }
+      // 207:  string:u32 texture_alias
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].texture_alias.size = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].texture_alias.data = static_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].texture_alias.size));
+      for (uptr texture_alias_iter = 0; texture_alias_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].texture_alias.size; texture_alias_iter++)
+      {
+        packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].texture_alias.data[texture_alias_iter] = read_u8_little(stream);
+      }
+      // 208:  u32 gender_usage
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].gender_usage = read_u32_little(stream);
+      // 209:  u32 item_type
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].item_type = read_u32_little(stream);
+      // 210:  u32 category_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].category_id = read_u32_little(stream);
+      // 211:  u32 weapon_trail_effect_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].weapon_trail_effect_id = read_u32_little(stream);
+      // 212:  u32 composite_effect_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].composite_effect_id = read_u32_little(stream);
+      // 213:  u32 power_rating
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].power_rating = read_u32_little(stream);
+      // 214:  u32 min_profile_rank
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].min_profile_rank = read_u32_little(stream);
+      // 215:  u32 rarity
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].rarity = read_u32_little(stream);
+      // 216:  u32 activatable_ability_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].activatable_ability_id = read_u32_little(stream);
+      // 217:  u32 activatable_ability_set_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].activatable_ability_set_id = read_u32_little(stream);
+      // 218:  u32 passive_ability_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].passive_ability_id = read_u32_little(stream);
+      // 219:  u32 passive_ability_set_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].passive_ability_set_id = read_u32_little(stream);
+      // 220:  u32 max_stack_size
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].max_stack_size = read_u32_little(stream);
+      // 221:  u32 min_stack_size
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].min_stack_size = read_u32_little(stream);
+      // 222:  string:u32 tint_alias
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_alias.size = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_alias.data = static_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_alias.size));
+      for (uptr tint_alias_iter = 0; tint_alias_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_alias.size; tint_alias_iter++)
+      {
+        packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_alias.data[tint_alias_iter] = read_u8_little(stream);
+      }
+      // 223:  u32 tint_group_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].tint_group_id = read_u32_little(stream);
+      // 224:  u32 member_discount
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].member_discount = read_u32_little(stream);
+      // 225:  u32 vip_rank_required
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].vip_rank_required = read_u32_little(stream);
+      // 226:  u32 race_set_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].race_set_id = read_u32_little(stream);
+      // 227:  u32 ui_model_camera_id_1
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].ui_model_camera_id_1 = read_u32_little(stream);
+      // 228:  u32 equip_count_max
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].equip_count_max = read_u32_little(stream);
+      // 229:  u32 curreny_type
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].curreny_type = read_u32_little(stream);
+      // 230:  u32 datasheet_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].datasheet_id = read_u32_little(stream);
+      // 231:  u32 item_type_1
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].item_type_1 = read_u32_little(stream);
+      // 232:  u32 skill_set_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].skill_set_id = read_u32_little(stream);
+      // 233:  string:u32 overlay_texture
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_texture.size = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_texture.data = static_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_texture.size));
+      for (uptr overlay_texture_iter = 0; overlay_texture_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_texture.size; overlay_texture_iter++)
+      {
+        packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_texture.data[overlay_texture_iter] = read_u8_little(stream);
+      }
+      // 234:  string:u32 decal_slot
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].decal_slot.size = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].decal_slot.data = static_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].decal_slot.size));
+      for (uptr decal_slot_iter = 0; decal_slot_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].decal_slot.size; decal_slot_iter++)
+      {
+        packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].decal_slot.data[decal_slot_iter] = read_u8_little(stream);
+      }
+      // 235:  u32 overlay_adjustment
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].overlay_adjustment = read_u32_little(stream);
+      // 236:  u32 trial_duration_sec
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].trial_duration_sec = read_u32_little(stream);
+      // 237:  u32 next_trial_delay_sec
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].next_trial_delay_sec = read_u32_little(stream);
+      // 238:  u32 client_use_requirement
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].client_use_requirement = read_u32_little(stream);
+      // 239:  string:u32 override_appearance
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_appearance.size = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_appearance.data = static_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_appearance.size));
+      for (uptr override_appearance_iter = 0; override_appearance_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_appearance.size; override_appearance_iter++)
+      {
+        packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_appearance.data[override_appearance_iter] = read_u8_little(stream);
+      }
+      // 240:  u32 override_camera_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].override_camera_id = read_u32_little(stream);
+      // 241:  u32 unk_dword_3
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_3 = read_u32_little(stream);
+      // 242:  u32 unk_dword_4
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_4 = read_u32_little(stream);
+      // 243:  u32 unk_dword_5
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_5 = read_u32_little(stream);
+      // 244:  u32 bulk
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].bulk = read_u32_little(stream);
+      // 245:  u32 active_equip_slot_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].active_equip_slot_id = read_u32_little(stream);
+      // 246:  u32 passive_equip_slot_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].passive_equip_slot_id = read_u32_little(stream);
+      // 247:  u32 passive_equip_slot_group_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].passive_equip_slot_group_id = read_u32_little(stream);
+      // 248:  u32 unk_dword_6
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_6 = read_u32_little(stream);
+      // 249:  u32 grinder_reward_set_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].grinder_reward_set_id = read_u32_little(stream);
+      // 250:  u32 build_bar_group_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].build_bar_group_id = read_u32_little(stream);
+      // 251:  string:u32 unk_string_1
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_string_1.size = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_string_1.data = static_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_string_1.size));
+      for (uptr unk_string_1_iter = 0; unk_string_1_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_string_1.size; unk_string_1_iter++)
+      {
+        packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_string_1.data[unk_string_1_iter] = read_u8_little(stream);
+      }
+      // 252:  b8 unk_bool_1
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_bool_1 = read_b8_little(stream);
+      // 253:  b8 is_armor
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].is_armor = read_b8_little(stream);
+      // 254:  u32 unk_dword_7
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_7 = read_u32_little(stream);
+      // 255:  u32 param1
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].param1 = read_u32_little(stream);
+      // 256:  u32 param2
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].param2 = read_u32_little(stream);
+      // 257:  u32 param3
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].param3 = read_u32_little(stream);
+      // 258:  string:u32 string_param1
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].string_param1.size = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].string_param1.data = static_cast<char*>(arena_push_size(arena, packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].string_param1.size));
+      for (uptr string_param1_iter = 0; string_param1_iter < (uptr)packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].string_param1.size; string_param1_iter++)
+      {
+        packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].string_param1.data[string_param1_iter] = read_u8_little(stream);
+      }
+      // 259:  u32 ui_model_camera_id_2
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].ui_model_camera_id_2 = read_u32_little(stream);
+      // 260:  u32 unk_dword_8
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].unk_dword_8 = read_u32_little(stream);
+      // 261:  u32 scrap_value_override
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].scrap_value_override = read_u32_little(stream);
+      // 263:  list:u32 stats_item_def_2
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2_count = read_u32_little(stream);
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2 = static_cast<stats_item_def_2_s>(arena_push_size(arena, sizeof(stats_item_def_2_s) * packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2_count));
+      for (uptr stats_item_def_2_iter = 0; stats_item_def_2_iter < packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2_count; stats_item_def_2_iter++)
+      {
+      // 265:  u32 unk_dword_9
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].unk_dword_9 = read_u32_little(stream);
+      // 266:  u32 stat_id
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].stat_id = read_u32_little(stream);
+      // 268:  switch: variabletype8
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8_case = read_u8_little(stream);
+      switch(packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8_case)
+      {
+      case 0:
+      {
+      // 271:  u32 base
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.base = read_u32_little(stream);
+      // 272:  u32 modifier
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue0.modifier = read_u32_little(stream);
+      } break; // statValue0
+      case 1:
+      {
+      // 275:  f32 base
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.base = read_f32_little(stream);
+      // 276:  f32 modifier
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].variabletype8.statValue1.modifier = read_f32_little(stream);
+      } break; // statValue1
+      } // variabletype8
+      // 279:  u32 unk_dword_10
+      packet->characters[characters_iter].payload.itemDefinitions[itemDefinitions_iter].item_defs[item_defs_iter].stats_item_def_2[stats_item_def_2_iter].unk_dword_10 = read_u32_little(stream);
+    } // stats_item_def_2
+    } // item_defs
+    } // itemDefinitions
+      // 283:  u64 lastUseDate
+      packet->characters[characters_iter].payload.lastUseDate = read_u64_little(stream);
+      }
+    } // characters
+    } break;
+
+    case Login_Packet_Kind_ServerListReply:
+    {
+      Login_Packet_ServerListReply* packet = static_cast<Login_Packet_ServerListReply*>(result_ptr);
+      // 290:  list:u32 servers
+      packet->servers_count = read_u32_little(stream);
+      packet->servers = static_cast<servers_s>(arena_push_size(arena, sizeof(servers_s) * packet->servers_count));
+      for (uptr servers_iter = 0; servers_iter < packet->servers_count; servers_iter++)
+      {
+      // 292:  u32 id
+      packet->servers[servers_iter].id = read_u32_little(stream);
+      // 293:  u32 state
+      packet->servers[servers_iter].state = read_u32_little(stream);
+      // 294:  b8 is_locked
+      packet->servers[servers_iter].is_locked = read_b8_little(stream);
+      // 295:  string:u32 name
+      packet->servers[servers_iter].name.size = read_u32_little(stream);
+      packet->servers[servers_iter].name.data = static_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].name.size));
+      for (uptr name_iter = 0; name_iter < (uptr)packet->servers[servers_iter].name.size; name_iter++)
+      {
+        packet->servers[servers_iter].name.data[name_iter] = read_u8_little(stream);
+      }
+      // 296:  u32 name_id
+      packet->servers[servers_iter].name_id = read_u32_little(stream);
+      // 297:  string:u32 description
+      packet->servers[servers_iter].description.size = read_u32_little(stream);
+      packet->servers[servers_iter].description.data = static_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].description.size));
+      for (uptr description_iter = 0; description_iter < (uptr)packet->servers[servers_iter].description.size; description_iter++)
+      {
+        packet->servers[servers_iter].description.data[description_iter] = read_u8_little(stream);
+      }
+      // 298:  u32 description_id
+      packet->servers[servers_iter].description_id = read_u32_little(stream);
+      // 299:  u32 req_feature_id
+      packet->servers[servers_iter].req_feature_id = read_u32_little(stream);
+      // 300:  string:u32 server_info
+      packet->servers[servers_iter].server_info.size = read_u32_little(stream);
+      packet->servers[servers_iter].server_info.data = static_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].server_info.size));
+      for (uptr server_info_iter = 0; server_info_iter < (uptr)packet->servers[servers_iter].server_info.size; server_info_iter++)
+      {
+        packet->servers[servers_iter].server_info.data[server_info_iter] = read_u8_little(stream);
+      }
+      // 301:  u32 population_level
+      packet->servers[servers_iter].population_level = read_u32_little(stream);
+      // 302:  string:u32 population_data
+      packet->servers[servers_iter].population_data.size = read_u32_little(stream);
+      packet->servers[servers_iter].population_data.data = static_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].population_data.size));
+      for (uptr population_data_iter = 0; population_data_iter < (uptr)packet->servers[servers_iter].population_data.size; population_data_iter++)
+      {
+        packet->servers[servers_iter].population_data.data[population_data_iter] = read_u8_little(stream);
+      }
+      // 303:  string:u32 access_expression
+      packet->servers[servers_iter].access_expression.size = read_u32_little(stream);
+      packet->servers[servers_iter].access_expression.data = static_cast<char*>(arena_push_size(arena, packet->servers[servers_iter].access_expression.size));
+      for (uptr access_expression_iter = 0; access_expression_iter < (uptr)packet->servers[servers_iter].access_expression.size; access_expression_iter++)
+      {
+        packet->servers[servers_iter].access_expression.data[access_expression_iter] = read_u8_little(stream);
+      }
+      // 304:  b8 is_access_allowed
+      packet->servers[servers_iter].is_access_allowed = read_b8_little(stream);
+    } // servers
+    } break;
+
+    default:
+    {
+      std::cout << "unpacking not handled";
+    }
+  }
+
+  return stream->cursor - cursor_begin;
 }

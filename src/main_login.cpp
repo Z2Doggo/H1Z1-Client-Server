@@ -17,7 +17,7 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 		{ 
 			.buffer{
 				.size = MB(10),
-				.data = static_cast<uint8_t*>(arena_push_size(memory->arena_total, MB(10))),
+				.data = static_cast<char*>(arena_push_size(memory->arena_total, MB(10))),
 			},
 		};
 		app->socket = app->api->udp_create_and_bind(LOCAL_PORT);
@@ -26,10 +26,10 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
 
     DEFER_SCOPE(0, arena_reset(app->arena_per_tick)) 
     {
-        uint8_t incoming_buffer[MAX_PACKET_SIZE]{};
-        uint32_t from_ip;
-        uint16_t from_port;
-        int32_t receive_result = app->api->receive_from(app->socket, incoming_buffer, MAX_PACKET_SIZE, &from_ip,  &from_port);
+        char incoming_buffer[MAX_PACKET_SIZE]{};
+        u32 from_ip;
+        u16 from_port;
+        i32 receive_result = app->api->receive_from(app->socket, incoming_buffer, MAX_PACKET_SIZE, &from_ip,  &from_port);
 
         if (receive_result) 
         {
@@ -43,7 +43,7 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
             };
 
             Session* session = nullptr;
-            uint32_t session_handle = memory->get_id_from_address(&app->pool, incoming_session_address);
+            u32 session_handle = memory->get_id_from_address(&app->pool, incoming_session_address);
             if (!session_handle) 
             {
                 session_handle = memory->acquire_session(&app->pool, incoming_session_address);
@@ -69,19 +69,19 @@ extern "C" __declspec(dllexport) APP_TICK(server_tick)
             }
 
             Buffer packet_buffer = { 
-                .size = static_cast<uintptr_t>(receive_result),               
+                .size = static_cast<uptr>(receive_result),               
                 .data = incoming_buffer 
             };
             memory->soe_packet_route(packet_buffer, FALSE, session_handle, app, memory->soe_protocol);
             
             if (&session->sequence_in > &session->acked_in) 
             {
-                for (int32_t ack_iter = 0; ack_iter < (&session->sequence_in - &session->acked_in);  ack_iter++) 
+                for (i32 ack_iter = 0; ack_iter < (&session->sequence_in - &session->acked_in);  ack_iter++) 
                 {
                     session->acked_in++;
                     SOE_Ack ack 
                     {
-                        .sequence = static_cast<uint16_t>(session->acked_in),
+                        .sequence = static_cast<u16>(session->acked_in),
                     };
                     memory->soe_packet_send(&ack, SOE_Protocol::Ack, session_handle, app);
                 }

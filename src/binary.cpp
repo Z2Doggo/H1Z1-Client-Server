@@ -1,47 +1,47 @@
 #include "binary.hpp"
 
-uint8_t read_uint8_t_at(void *memory)
+u8 read_u8_at(void *memory)
 {
-	uint8_t *at = (uint8_t *)memory;
+	u8 *at = (u8 *)memory;
 	return at[0];
 }
 
-uint16_t read_uint16_t_little_at(void *memory)
+u16 read_u16_little_at(void *memory)
 {
-	uint8_t *at = (uint8_t *)memory;
-	return (uint16_t)at[1] << 8 | (uint16_t)at[0];
+	u8 *at = (u8 *)memory;
+	return (u16)at[1] << 8 | (u16)at[0];
 }
 
-uint32_t read_uint32_t_little_at(void *memory)
+u32 read_u32_little_at(void *memory)
 {
-	uint8_t *at = (uint8_t *)memory;
-	return (uint32_t)at[3] << 24 | (uint32_t)at[2] << 16 | (uint32_t)at[1] << 8 | (uint32_t)at[0];
+	u8 *at = (u8 *)memory;
+	return (u32)at[3] << 24 | (u32)at[2] << 16 | (u32)at[1] << 8 | (u32)at[0];
 }
 
-uint64_t read_uint64_t_little_at(void *memory)
+u64 read_u64_little_at(void *memory)
 {
-	uint8_t *at = (uint8_t *)memory;
-	return (uint64_t)at[7] << 56 | (uint64_t)at[6] << 48 | (uint64_t)at[5] << 40 | (uint64_t)at[4] << 32 | (uint64_t)at[3] << 24 | (uint64_t)at[2] << 16 | (uint64_t)at[1] << 8 | (uint64_t)at[0];
+	u8 *at = (u8 *)memory;
+	return (u64)at[7] << 56 | (u64)at[6] << 48 | (u64)at[5] << 40 | (u64)at[4] << 32 | (u64)at[3] << 24 | (u64)at[2] << 16 | (u64)at[1] << 8 | (u64)at[0];
 }
 
-float read_float_little_at(void *memory)
+f32 read_f32_little_at(void *memory)
 {
-	uint32_t temp = read_uint32_t_little_at(memory);
-	return TRANSMUTE(float) temp;
+	u32 temp = read_u32_little_at(memory);
+	return TRANSMUTE(f32) temp;
 }
 
-double read_double_little_at(void *memory)
+f64 read_f64_little_at(void *memory)
 {
-	uint64_t temp = read_uint64_t_little_at(memory);
-	return TRANSMUTE(double) temp;
+	u64 temp = read_u64_little_at(memory);
+	return TRANSMUTE(f64) temp;
 }
 
 vec3 read_vec3_little_at(void *memory)
 {
 	vec3 result{};
-	result.x = read_float_little_at(memory);
-	result.y = read_float_little_at((void *)((uintptr_t)memory + 4));
-	result.z = read_float_little_at((void *)((uintptr_t)memory + 8));
+	result.x = read_f32_little_at(memory);
+	result.y = read_f32_little_at((void *)((uptr)memory + 4));
+	result.z = read_f32_little_at((void *)((uptr)memory + 8));
 
 	return result;
 }
@@ -49,50 +49,50 @@ vec3 read_vec3_little_at(void *memory)
 vec4 read_vec4_little_at(void *memory)
 {
 	vec4 result{};
-	result.x = read_float_little_at(memory);
-	result.y = read_float_little_at((void *)((uintptr_t)memory + 4));
-	result.z = read_float_little_at((void *)((uintptr_t)memory + 8));
-	result.w = read_float_little_at((void *)((uintptr_t)memory + 12));
+	result.x = read_f32_little_at(memory);
+	result.y = read_f32_little_at((void *)((uptr)memory + 4));
+	result.z = read_f32_little_at((void *)((uptr)memory + 8));
+	result.w = read_f32_little_at((void *)((uptr)memory + 12));
 
 	return result;
 }
 
-uint16_t read_uint16_t_big_at(void *memory)
+u16 read_u16_big_at(void *memory)
 {
-	uint8_t *at = (uint8_t *)memory;
-	return (uint16_t)at[0] << 8 | (uint16_t)at[1];
+	u8 *at = (u8 *)memory;
+	return (u16)at[0] << 8 | (u16)at[1];
 }
 
-uint32_t read_uint32_t_big_at(void *memory)
+u32 read_u32_big_at(void *memory)
 {
-	uint8_t *at = (uint8_t *)memory;
-	return (uint32_t)at[0] << 24 | (uint32_t)at[1] << 16 | (uint32_t)at[2] << 8 | (uint32_t)at[3];
+	u8 *at = (u8 *)memory;
+	return (u32)at[0] << 24 | (u32)at[1] << 16 | (u32)at[2] << 8 | (u32)at[3];
 }
 
-uint64_t read_uint64_t_big_at(void *memory)
+u64 read_u64_big_at(void *memory)
 {
-	uint8_t *at = (uint8_t *)memory;
-	return (uint64_t)at[0] << 56 | (uint64_t)at[1] << 48 | (uint64_t)at[2] << 40 | (uint64_t)at[3] << 32 | (uint64_t)at[4] << 24 | (uint64_t)at[5] << 16 | (uint64_t)at[6] << 8 | (uint64_t)at[7];
+	u8 *at = (u8 *)memory;
+	return (u64)at[0] << 56 | (u64)at[1] << 48 | (u64)at[2] << 40 | (u64)at[3] << 32 | (u64)at[4] << 24 | (u64)at[5] << 16 | (u64)at[6] << 8 | (u64)at[7];
 }
 
-float read_float_big_at(void *memory)
+f32 read_f32_big_at(void *memory)
 {
-	uint32_t temp = read_uint32_t_big_at(memory);
-	return TRANSMUTE(float) temp;
+	u32 temp = read_u32_big_at(memory);
+	return TRANSMUTE(f32) temp;
 }
 
-double read_double_big_at(void *memory)
+f64 read_f64_big_at(void *memory)
 {
-	uint64_t temp = read_uint64_t_big_at(memory);
-	return TRANSMUTE(double) temp;
+	u64 temp = read_u64_big_at(memory);
+	return TRANSMUTE(f64) temp;
 }
 
 vec3 read_vec3_big_at(void *memory)
 {
 	vec3 result{};
-	result.x = read_float_big_at(memory);
-	result.y = read_float_big_at((void *)((uintptr_t)memory + 4));
-	result.z = read_float_big_at((void *)((uintptr_t)memory + 8));
+	result.x = read_f32_big_at(memory);
+	result.y = read_f32_big_at((void *)((uptr)memory + 4));
+	result.z = read_f32_big_at((void *)((uptr)memory + 8));
 
 	return result;
 }
@@ -100,45 +100,45 @@ vec3 read_vec3_big_at(void *memory)
 vec4 read_vec4_big_at(void *memory)
 {
 	vec4 result{};
-	result.x = read_float_big_at(memory);
-	result.y = read_float_big_at((void *)((uintptr_t)memory + 4));
-	result.z = read_float_big_at((void *)((uintptr_t)memory + 8));
-	result.w = read_float_big_at((void *)((uintptr_t)memory + 12));
+	result.x = read_f32_big_at(memory);
+	result.y = read_f32_big_at((void *)((uptr)memory + 4));
+	result.z = read_f32_big_at((void *)((uptr)memory + 8));
+	result.w = read_f32_big_at((void *)((uptr)memory + 12));
 
 	return result;
 }
 
-void write_uint8_t_at(void *memory, uint8_t value)
+void write_u8_at(void *memory, u8 value)
 {
-	uint8_t *at = (uint8_t *)memory;
+	u8 *at = (u8 *)memory;
 	at[0] = value;
 }
 
-void write_uint16_t_little_at(void *memory, uint16_t value)
+void write_u16_little_at(void *memory, u16 value)
 {
-	uint8_t *at = (uint8_t *)memory;
+	u8 *at = (u8 *)memory;
 
-	uint8_t *raw_value = (uint8_t *)&value;
+	u8 *raw_value = (u8 *)&value;
 	at[0] = raw_value[0];
 	at[1] = raw_value[1];
 }
 
-void write_uint32_t_little_at(void *memory, uint32_t value)
+void write_u32_little_at(void *memory, u32 value)
 {
-	uint8_t *at = (uint8_t *)memory;
+	u8 *at = (u8 *)memory;
 
-	uint8_t *raw_value = (uint8_t *)&value;
+	u8 *raw_value = (u8 *)&value;
 	at[0] = raw_value[0];
 	at[1] = raw_value[1];
 	at[2] = raw_value[2];
 	at[3] = raw_value[3];
 }
 
-void write_uint64_t_little_at(void *memory, uint64_t value)
+void write_u64_little_at(void *memory, u64 value)
 {
-	uint8_t *at = (uint8_t *)memory;
+	u8 *at = (u8 *)memory;
 
-	uint8_t *raw_value = (uint8_t *)&value;
+	u8 *raw_value = (u8 *)&value;
 	at[0] = raw_value[0];
 	at[1] = raw_value[1];
 	at[2] = raw_value[2];
@@ -149,56 +149,56 @@ void write_uint64_t_little_at(void *memory, uint64_t value)
 	at[7] = raw_value[7];
 }
 
-void write_float_little_at(void *memory, float value)
+void write_f32_little_at(void *memory, f32 value)
 {
-	write_uint32_t_little_at(memory, TRANSMUTE(uint32_t) value);
+	write_u32_little_at(memory, TRANSMUTE(u32) value);
 }
 
-void write_double_little_at(void *memory, double value)
+void write_f64_little_at(void *memory, f64 value)
 {
-	write_uint64_t_little_at(memory, TRANSMUTE(uint64_t) value);
+	write_u64_little_at(memory, TRANSMUTE(u64) value);
 }
 
 void write_vec3_little_at(void *memory, vec3 value)
 {
-	write_float_little_at(memory, value.x);
-	write_float_little_at((void *)((uintptr_t)memory + 4), value.y);
-	write_float_little_at((void *)((uintptr_t)memory + 8), value.z);
+	write_f32_little_at(memory, value.x);
+	write_f32_little_at((void *)((uptr)memory + 4), value.y);
+	write_f32_little_at((void *)((uptr)memory + 8), value.z);
 }
 
 void write_vec4_little_at(void *memory, vec4 value)
 {
-	write_float_little_at(memory, value.x);
-	write_float_little_at((void *)((uintptr_t)memory + 4), value.y);
-	write_float_little_at((void *)((uintptr_t)memory + 8), value.z);
-	write_float_little_at((void *)((uintptr_t)memory + 12), value.w);
+	write_f32_little_at(memory, value.x);
+	write_f32_little_at((void *)((uptr)memory + 4), value.y);
+	write_f32_little_at((void *)((uptr)memory + 8), value.z);
+	write_f32_little_at((void *)((uptr)memory + 12), value.w);
 }
 
-void write_uint16_t_big_at(void *memory, uint16_t value)
+void write_u16_big_at(void *memory, u16 value)
 {
-	uint8_t *at = (uint8_t *)memory;
+	u8 *at = (u8 *)memory;
 
-	uint8_t *raw_value = (uint8_t *)&value;
+	u8 *raw_value = (u8 *)&value;
 	at[0] = raw_value[1];
 	at[1] = raw_value[0];
 }
 
-void write_uint32_t_big_at(void *memory, uint32_t value)
+void write_u32_big_at(void *memory, u32 value)
 {
-	uint8_t *at = (uint8_t *)memory;
+	u8 *at = (u8 *)memory;
 
-	uint8_t *raw_value = (uint8_t *)&value;
+	u8 *raw_value = (u8 *)&value;
 	at[0] = raw_value[3];
 	at[1] = raw_value[2];
 	at[2] = raw_value[1];
 	at[3] = raw_value[0];
 }
 
-void write_uint64_t_big_at(void *memory, uint64_t value)
+void write_u64_big_at(void *memory, u64 value)
 {
-	uint8_t *at = (uint8_t *)memory;
+	u8 *at = (u8 *)memory;
 
-	uint8_t *raw_value = (uint8_t *)&value;
+	u8 *raw_value = (u8 *)&value;
 	at[0] = raw_value[7];
 	at[1] = raw_value[6];
 	at[2] = raw_value[5];
@@ -209,69 +209,69 @@ void write_uint64_t_big_at(void *memory, uint64_t value)
 	at[7] = raw_value[0];
 }
 
-void write_float_big_at(void *memory, float value)
+void write_f32_big_at(void *memory, f32 value)
 {
-	write_uint32_t_big_at(memory, TRANSMUTE(uint32_t) value);
+	write_u32_big_at(memory, TRANSMUTE(u32) value);
 }
 
-void write_double_big_at(void *memory, double value)
+void write_f64_big_at(void *memory, f64 value)
 {
-	write_uint64_t_big_at(memory, TRANSMUTE(uint64_t) value);
+	write_u64_big_at(memory, TRANSMUTE(u64) value);
 }
 
 void write_vec3_big_at(void *memory, vec3 value)
 {
-	write_float_big_at(memory, value.x);
-	write_float_big_at((void *)((uintptr_t)memory + 4), value.y);
-	write_float_big_at((void *)((uintptr_t)memory + 8), value.z);
+	write_f32_big_at(memory, value.x);
+	write_f32_big_at((void *)((uptr)memory + 4), value.y);
+	write_f32_big_at((void *)((uptr)memory + 8), value.z);
 }
 
 void write_vec4_big_at(void *memory, vec4 value)
 {
-	write_float_big_at(memory, value.x);
-	write_float_big_at((void *)((uintptr_t)memory + 4), value.y);
-	write_float_big_at((void *)((uintptr_t)memory + 8), value.z);
-	write_float_big_at((void *)((uintptr_t)memory + 12), value.w);
+	write_f32_big_at(memory, value.x);
+	write_f32_big_at((void *)((uptr)memory + 4), value.y);
+	write_f32_big_at((void *)((uptr)memory + 8), value.z);
+	write_f32_big_at((void *)((uptr)memory + 12), value.w);
 }
 
-uint8_t read_uint8_t(Stream *stream)
+u8 read_u8(Stream *stream)
 {
-	uint8_t result = read_uint8_t_at(stream->buffer.data + stream->cursor);
+	u8 result = read_u8_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 1;
 	return result;
 }
 
-uint16_t read_uint16_t_little(Stream *stream)
+u16 read_u16_little(Stream *stream)
 {
-	uint16_t result = read_uint16_t_little_at(stream->buffer.data + stream->cursor);
+	u16 result = read_u16_little_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 2;
 	return result;
 }
 
-uint32_t read_uint32_t_little(Stream *stream)
+u32 read_u32_little(Stream *stream)
 {
-	uint32_t result = read_uint32_t_little_at(stream->buffer.data + stream->cursor);
+	u32 result = read_u32_little_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 4;
 	return result;
 }
 
-uint64_t read_uint64_t_little(Stream *stream)
+u64 read_u64_little(Stream *stream)
 {
-	uint64_t result = read_uint64_t_little_at(stream->buffer.data + stream->cursor);
+	u64 result = read_u64_little_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 8;
 	return result;
 }
 
-float read_float_little(Stream *stream)
+f32 read_f32_little(Stream *stream)
 {
-	float result = read_float_little_at(stream->buffer.data + stream->cursor);
+	f32 result = read_f32_little_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 4;
 	return result;
 }
 
-double read_double_little(Stream *stream)
+f64 read_f64_little(Stream *stream)
 {
-	double result = read_double_little_at(stream->buffer.data + stream->cursor);
+	f64 result = read_f64_little_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 8;
 	return result;
 }
@@ -290,37 +290,37 @@ vec4 read_vec4_little(Stream *stream)
 	return result;
 }
 
-uint16_t read_uint16_t_big(Stream *stream)
+u16 read_u16_big(Stream *stream)
 {
-	uint16_t result = read_uint16_t_big_at(stream->buffer.data + stream->cursor);
+	u16 result = read_u16_big_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 2;
 	return result;
 }
 
-uint32_t read_uint32_t_big(Stream *stream)
+u32 read_u32_big(Stream *stream)
 {
-	uint32_t result = read_uint32_t_big_at(stream->buffer.data + stream->cursor);
+	u32 result = read_u32_big_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 4;
 	return result;
 }
 
-uint64_t read_uint64_t_big(Stream *stream)
+u64 read_u64_big(Stream *stream)
 {
-	uint64_t result = read_uint64_t_big_at(stream->buffer.data + stream->cursor);
+	u64 result = read_u64_big_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 8;
 	return result;
 }
 
-float read_float_big(Stream *stream)
+f32 read_f32_big(Stream *stream)
 {
-	float result = read_float_big_at(stream->buffer.data + stream->cursor);
+	f32 result = read_f32_big_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 4;
 	return result;
 }
 
-double read_double_big(Stream *stream)
+f64 read_f64_big(Stream *stream)
 {
-	double result = read_double_big_at(stream->buffer.data + stream->cursor);
+	f64 result = read_f64_big_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 8;
 	return result;
 }
@@ -339,39 +339,39 @@ vec4 read_vec4_big(Stream *stream)
 	return result;
 }
 
-void write_uint8_t(Stream *stream, uint8_t value)
+void write_u8(Stream *stream, u8 value)
 {
-	write_uint8_t_at(stream->buffer.data + stream->cursor, value);
+	write_u8_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 1;
 }
 
-void write_uint16_t_little(Stream *stream, uint16_t value)
+void write_u16_little(Stream *stream, u16 value)
 {
-	write_uint16_t_little_at(stream->buffer.data + stream->cursor, value);
+	write_u16_little_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 2;
 }
 
-void write_uint32_t_little(Stream *stream, uint32_t value)
+void write_u32_little(Stream *stream, u32 value)
 {
-	write_uint32_t_little_at(stream->buffer.data + stream->cursor, value);
+	write_u32_little_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 4;
 }
 
-void write_uint64_t_little(Stream *stream, uint64_t value)
+void write_u64_little(Stream *stream, u64 value)
 {
-	write_uint64_t_little_at(stream->buffer.data + stream->cursor, value);
+	write_u64_little_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 8;
 }
 
-void write_float_little(Stream *stream, float value)
+void write_f32_little(Stream *stream, f32 value)
 {
-	write_float_little_at(stream->buffer.data + stream->cursor, value);
+	write_f32_little_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 4;
 }
 
-void write_double_little(Stream *stream, double value)
+void write_f64_little(Stream *stream, f64 value)
 {
-	write_double_little_at(stream->buffer.data + stream->cursor, value);
+	write_f64_little_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 8;
 }
 
@@ -387,33 +387,33 @@ void write_vec4_little(Stream *stream, vec4 value)
 	stream->cursor += 16;
 }
 
-void write_uint16_t_big(Stream *stream, uint16_t value)
+void write_u16_big(Stream *stream, u16 value)
 {
-	write_uint16_t_big_at(stream->buffer.data + stream->cursor, value);
+	write_u16_big_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 2;
 }
 
-void write_uint32_t_big(Stream *stream, uint32_t value)
+void write_u32_big(Stream *stream, u32 value)
 {
-	write_uint32_t_big_at(stream->buffer.data + stream->cursor, value);
+	write_u32_big_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 4;
 }
 
-void write_uint64_t_big(Stream *stream, uint64_t value)
+void write_u64_big(Stream *stream, u64 value)
 {
-	write_uint64_t_big_at(stream->buffer.data + stream->cursor, value);
+	write_u64_big_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 8;
 }
 
-void write_float_big(Stream *stream, float value)
+void write_f32_big(Stream *stream, f32 value)
 {
-	write_float_big_at(stream->buffer.data + stream->cursor, value);
+	write_f32_big_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 4;
 }
 
-void write_double_big(Stream *stream, double value)
+void write_f64_big(Stream *stream, f64 value)
 {
-	write_double_big_at(stream->buffer.data + stream->cursor, value);
+	write_f64_big_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 8;
 }
 
@@ -429,83 +429,83 @@ void write_vec4_big(Stream *stream, vec4 value)
 	stream->cursor += 16;
 }
 
-uint8_t peek_uint8_t(Stream stream, uintptr_t offset)
+u8 peek_u8(Stream stream, uptr offset)
 {
-	return read_uint8_t_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_u8_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-uint16_t peek_uint16_t_little(Stream stream, uintptr_t offset)
+u16 peek_u16_little(Stream stream, uptr offset)
 {
-	return read_uint16_t_little_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_u16_little_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-uint32_t peek_uint32_t_little(Stream stream, uintptr_t offset)
+u32 peek_u32_little(Stream stream, uptr offset)
 {
-	return read_uint32_t_little_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_u32_little_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-uint64_t peek_uint64_t_little(Stream stream, uintptr_t offset)
+u64 peek_u64_little(Stream stream, uptr offset)
 {
-	return read_uint64_t_little_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_u64_little_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-float peek_float_little(Stream stream, uintptr_t offset)
+f32 peek_f32_little(Stream stream, uptr offset)
 {
-	return read_float_little_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_f32_little_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-double peek_double_little(Stream stream, uintptr_t offset)
+f64 peek_f64_little(Stream stream, uptr offset)
 {
-	return read_double_little_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_f64_little_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-vec3 peek_vec3_little(Stream stream, uintptr_t offset)
+vec3 peek_vec3_little(Stream stream, uptr offset)
 {
-	return read_vec3_little_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_vec3_little_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-vec4 peek_vec4_little(Stream stream, uintptr_t offset)
+vec4 peek_vec4_little(Stream stream, uptr offset)
 {
-	return read_vec4_little_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_vec4_little_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-uint16_t peek_uint16_t_big(Stream stream, uintptr_t offset)
+u16 peek_u16_big(Stream stream, uptr offset)
 {
-	return read_uint16_t_big_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_u16_big_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-uint32_t peek_uint32_t_big(Stream stream, uintptr_t offset)
+u32 peek_u32_big(Stream stream, uptr offset)
 {
-	return read_uint32_t_big_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_u32_big_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-uint64_t peek_uint64_t_big(Stream stream, uintptr_t offset)
+u64 peek_u64_big(Stream stream, uptr offset)
 {
-	return read_uint64_t_big_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_u64_big_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-float peek_float_big(Stream stream, uintptr_t offset)
+f32 peek_f32_big(Stream stream, uptr offset)
 {
-	return read_float_big_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_f32_big_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-double peek_double_big(Stream stream, uintptr_t offset)
+f64 peek_f64_big(Stream stream, uptr offset)
 {
-	return read_double_big_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_f64_big_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-vec3 peek_vec3_big(Stream stream, uintptr_t offset)
+vec3 peek_vec3_big(Stream stream, uptr offset)
 {
-	return read_vec3_big_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_vec3_big_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-vec4 peek_vec4_big(Stream stream, uintptr_t offset)
+vec4 peek_vec4_big(Stream stream, uptr offset)
 {
-	return read_vec4_big_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_vec4_big_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
 // Fast Half Float Conversions, Jeroen van der Zijp, November 2008, (Revised September 2010)
-static uint32_t global_mantissa_table[2048] =
+static u32 global_mantissa_table[2048] =
 	{
 		0, 0x33800000, 0x34000000, 0x34400000, 0x34800000, 0x34a00000, 0x34c00000, 0x34e00000,
 		0x35000000, 0x35100000, 0x35200000, 0x35300000, 0x35400000, 0x35500000, 0x35600000, 0x35700000,
@@ -764,7 +764,7 @@ static uint32_t global_mantissa_table[2048] =
 		0x387e0000, 0x387e2000, 0x387e4000, 0x387e6000, 0x387e8000, 0x387ea000, 0x387ec000, 0x387ee000,
 		0x387f0000, 0x387f2000, 0x387f4000, 0x387f6000, 0x387f8000, 0x387fa000, 0x387fc000, 0x387fe000};
 
-static uint32_t global_exponent_table[64] =
+static u32 global_exponent_table[64] =
 	{
 		0, 0x800000, 0x1000000, 0x1800000, 0x2000000, 0x2800000, 0x3000000, 0x3800000,
 		0x4000000, 0x4800000, 0x5000000, 0x5800000, 0x6000000, 0x6800000, 0x7000000, 0x7800000,
@@ -775,7 +775,7 @@ static uint32_t global_exponent_table[64] =
 		0x88000000, 0x88800000, 0x89000000, 0x89800000, 0x8a000000, 0x8a800000, 0x8b000000, 0x8b800000,
 		0x8c000000, 0x8c800000, 0x8d000000, 0x8d800000, 0x8e000000, 0x8e800000, 0x8f000000, 0xc7800000};
 
-static uint16_t global_offset_table[64] =
+static u16 global_offset_table[64] =
 	{
 		0, 0x400, 0x400, 0x400, 0x400, 0x400, 0x400, 0x400,
 		0x400, 0x400, 0x400, 0x400, 0x400, 0x400, 0x400, 0x400,
@@ -786,7 +786,7 @@ static uint16_t global_offset_table[64] =
 		0x400, 0x400, 0x400, 0x400, 0x400, 0x400, 0x400, 0x400,
 		0x400, 0x400, 0x400, 0x400, 0x400, 0x400, 0x400, 0x400};
 
-static uint16_t global_base_table[512] =
+static u16 global_base_table[512] =
 	{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -821,7 +821,7 @@ static uint16_t global_base_table[512] =
 		0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00,
 		0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00};
 
-static uint8_t global_shift_table[512] =
+static u8 global_shift_table[512] =
 	{
 		0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18,
 		0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18,
@@ -856,106 +856,106 @@ static uint8_t global_shift_table[512] =
 		0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18,
 		0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x0d};
 
-float read_f16_little_at(void *memory)
+f32 read_f16_little_at(void *memory)
 {
-	uint32_t temp = (uint32_t)read_uint16_t_little_at(memory);
+	u32 temp = (u32)read_u16_little_at(memory);
 	temp = global_mantissa_table[global_offset_table[temp >> 10] + (temp & 0x3ff)] + global_exponent_table[temp >> 10];
 
-	return TRANSMUTE(float) temp;
+	return TRANSMUTE(f32) temp;
 }
 
-float read_f16_big_at(void *memory)
+f32 read_f16_big_at(void *memory)
 {
-	uint32_t temp = (uint32_t)read_uint16_t_big_at(memory);
+	u32 temp = (u32)read_u16_big_at(memory);
 	temp = global_mantissa_table[global_offset_table[temp >> 10] + (temp & 0x3ff)] + global_exponent_table[temp >> 10];
 
-	return TRANSMUTE(float) temp;
+	return TRANSMUTE(f32) temp;
 }
 
-void write_f16_little_at(void *memory, float value)
+void write_f16_little_at(void *memory, f32 value)
 {
-	uint32_t temp = TRANSMUTE(uint32_t) value;
-	uint16_t raw = (uint16_t)(global_base_table[(temp >> 23) & 0x1ff] + ((temp & 0x007fffff) >> global_shift_table[(temp >> 23) & 0x1ff]));
-	write_uint16_t_little_at(memory, raw);
+	u32 temp = TRANSMUTE(u32) value;
+	u16 raw = (u16)(global_base_table[(temp >> 23) & 0x1ff] + ((temp & 0x007fffff) >> global_shift_table[(temp >> 23) & 0x1ff]));
+	write_u16_little_at(memory, raw);
 }
 
-void write_f16_big_at(void *memory, float value)
+void write_f16_big_at(void *memory, f32 value)
 {
-	uint32_t temp = TRANSMUTE(uint32_t) value;
-	uint16_t raw = (uint16_t)(global_base_table[(temp >> 23) & 0x1ff] + ((temp & 0x007fffff) >> global_shift_table[(temp >> 23) & 0x1ff]));
-	write_uint16_t_big_at(memory, raw);
+	u32 temp = TRANSMUTE(u32) value;
+	u16 raw = (u16)(global_base_table[(temp >> 23) & 0x1ff] + ((temp & 0x007fffff) >> global_shift_table[(temp >> 23) & 0x1ff]));
+	write_u16_big_at(memory, raw);
 }
 
-float read_f16_little(Stream *stream)
+f32 read_f16_little(Stream *stream)
 {
-	float result = read_f16_little_at(stream->buffer.data + stream->cursor);
+	f32 result = read_f16_little_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 2;
 	return result;
 }
 
-float read_f16_big(Stream *stream)
+f32 read_f16_big(Stream *stream)
 {
-	float result = read_f16_big_at(stream->buffer.data + stream->cursor);
+	f32 result = read_f16_big_at(stream->buffer.data + stream->cursor);
 	stream->cursor += 2;
 	return result;
 }
 
-void write_f16_little(Stream *stream, float value)
+void write_f16_little(Stream *stream, f32 value)
 {
 	write_f16_little_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 2;
 }
 
-void write_f16_big(Stream *stream, float value)
+void write_f16_big(Stream *stream, f32 value)
 {
 	write_f16_big_at(stream->buffer.data + stream->cursor, value);
 	stream->cursor += 2;
 }
 
-float peek_f16_little(Stream stream, uintptr_t offset)
+f32 peek_f16_little(Stream stream, uptr offset)
 {
-	return read_f16_little_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_f16_little_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-float peek_f16_big(Stream stream, uintptr_t offset)
+f32 peek_f16_big(Stream stream, uptr offset)
 {
-	return read_f16_big_at((void *)((uintptr_t)stream.buffer.data + stream.cursor + offset));
+	return read_f16_big_at((void *)((uptr)stream.buffer.data + stream.cursor + offset));
 }
 
-void push_uint8_t(Arena *arena, uint8_t value)
+void push_u8(Arena *arena, u8 value)
 {
 	void *at = arena_push_size(arena, 1);
-	write_uint8_t_at(at, value);
+	write_u8_at(at, value);
 }
 
-void push_uint16_t_little(Arena *arena, uint16_t value)
+void push_u16_little(Arena *arena, u16 value)
 {
 	void *at = arena_push_size(arena, 2);
-	write_uint16_t_little_at(at, value);
+	write_u16_little_at(at, value);
 }
 
-void push_uint32_t_little(Arena *arena, uint32_t value)
+void push_u32_little(Arena *arena, u32 value)
 {
 	void *at = arena_push_size(arena, 4);
-	write_uint32_t_little_at(at, value);
+	write_u32_little_at(at, value);
 }
 
-void push_uint64_t_little(Arena *arena, uint64_t value)
+void push_u64_little(Arena *arena, u64 value)
 {
 	void *at = arena_push_size(arena, 8);
-	write_uint64_t_little_at(at, value);
+	write_u64_little_at(at, value);
 }
 
-void push_float_little(Arena *arena, float value)
+void push_f32_little(Arena *arena, f32 value)
 {
 	void *at = arena_push_size(arena, 4);
-	write_float_little_at(at, value);
+	write_f32_little_at(at, value);
 }
 
-void push_double_little(Arena *arena, double value)
+void push_f64_little(Arena *arena, f64 value)
 {
 	void *at = arena_push_size(arena, 8);
-	write_double_little_at(at, value);
+	write_f64_little_at(at, value);
 }
 
 void push_vec3_little(Arena *arena, vec3 value)
@@ -970,34 +970,34 @@ void push_vec4_little(Arena *arena, vec4 value)
 	write_vec4_little_at(at, value);
 }
 
-void push_uint16_t_big(Arena *arena, uint16_t value)
+void push_u16_big(Arena *arena, u16 value)
 {
 	void *at = arena_push_size(arena, 2);
-	write_uint16_t_big_at(at, value);
+	write_u16_big_at(at, value);
 }
 
-void push_uint32_t_big(Arena *arena, uint32_t value)
+void push_u32_big(Arena *arena, u32 value)
 {
 	void *at = arena_push_size(arena, 4);
-	write_uint32_t_big_at(at, value);
+	write_u32_big_at(at, value);
 }
 
-void push_uint64_t_big(Arena *arena, uint64_t value)
+void push_u64_big(Arena *arena, u64 value)
 {
 	void *at = arena_push_size(arena, 8);
-	write_uint64_t_big_at(at, value);
+	write_u64_big_at(at, value);
 }
 
-void push_float_big(Arena *arena, float value)
+void push_f32_big(Arena *arena, f32 value)
 {
 	void *at = arena_push_size(arena, 4);
-	write_float_big_at(at, value);
+	write_f32_big_at(at, value);
 }
 
-void push_double_big(Arena *arena, double value)
+void push_f64_big(Arena *arena, f64 value)
 {
 	void *at = arena_push_size(arena, 8);
-	write_double_big_at(at, value);
+	write_f64_big_at(at, value);
 }
 
 void push_vec3_big(Arena *arena, vec3 value)
@@ -1012,13 +1012,13 @@ void push_vec4_big(Arena *arena, vec4 value)
 	write_vec4_big_at(at, value);
 }
 
-void push_f16_little(Arena *arena, float value)
+void push_f16_little(Arena *arena, f32 value)
 {
 	void *at = arena_push_size(arena, 2);
 	write_f16_little_at(at, value);
 }
 
-void push_f16_big(Arena *arena, float value)
+void push_f16_big(Arena *arena, f32 value)
 {
 	void *at = arena_push_size(arena, 2);
 	write_f16_big_at(at, value);

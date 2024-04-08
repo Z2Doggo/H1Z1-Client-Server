@@ -19,7 +19,7 @@ APP_TICK(app_tick_stub)
 FILETIME get_last_write_time(const char* file_name)
 {
 	FILETIME result{};
-	WIN32_FILE_ATTRIBUTE_DATA file_data;
+	static WIN32_FILE_ATTRIBUTE_DATA file_data;
 	if (GetFileAttributesEx(file_name, GetFileExInfoStandard, &file_data))
 	{
 		result = file_data.ftLastWriteTime;

@@ -21,26 +21,11 @@
 #include <unordered_map>
 
 #include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
-
-#define TRANSMUTE(t) *(t*)&
-#define ALIGN_POW2(x, align) (((x) + ((align)-1)) & ~(((x) - (x)) + (align)-1))
-#define DEFER_SCOPE(begin, end) for (uintptr_t _ = ((begin), 0); !_; ++_, (end))
-#define UNUSED(x) (void)x
-
-#define STRING_CAST(x) const_cast<char*>(x)
-
-#define STREAM_REMAINING_DATA(stream)  (stream.buffer.data + stream.cursor)
-#define STREAM_REMAINING_SIZE(stream)  ((stream).buffer.size - (stream).cursor)
-#define STREAM_AT(stream) ((stream).buffer.data + (stream).cursor)
-
-#define MIN(a,b)  (a < b ? a : b)
-#define MAX(a,b)  (a > b ? a : b)
-#define KB(n) ((n) * 1024)
-#define MB(n) (KB(n) * 1024)
 
 typedef int8_t i8;
 typedef int16_t i16;
@@ -56,85 +41,96 @@ typedef uint64_t u64;
 typedef uintptr_t uptr;
 typedef size_t usize;
 
-typedef u8 b8;
-typedef u16 b16;
-typedef u32 b32;
-typedef u64 b64;
-
-typedef unsigned char uchar;
+typedef bool b8;
 typedef float f32;
 typedef double f64;
 
+#define TRANSMUTE(t) *(t*)&
+#define ALIGN_POW2(x, align) (((x) + ((align)-1)) & ~(((x) - (x)) + (align)-1))
+#define DEFER_SCOPE(begin, end) for (uptr _ = ((begin), 0); !_; ++_, (end))
+#define UNUSED(x) (void)x
+
+#define STRING_CAST(x) const_cast<char*>(x)
+
+#define STREAM_REMAINING_DATA(stream)  (stream.buffer.data + stream.cursor)
+#define STREAM_REMAINING_SIZE(stream)  ((stream).buffer.size - (stream).cursor)
+#define STREAM_AT(stream) ((stream).buffer.data + (stream).cursor)
+
+#define MIN(a,b)  (a < b ? a : b)
+#define MAX(a,b)  (a > b ? a : b)
+#define KB(n) ((n) * 1024)
+#define MB(n) (KB(n) * 1024)
+
 struct Buffer
 {
-	size_t size;
-	uint8_t* data;
+	usize size;
+	char* data;
 };
 
 struct Stream
 {
 	Buffer buffer;
-	uintptr_t cursor;
+	uptr cursor;
 };
 
 struct Arena
 {
-	uint8_t* memory;
-	size_t size;
-	uintptr_t cursor;
-	uintptr_t alignment;
+	u8* memory;
+	usize size;
+	uptr cursor;
+	uptr alignment;
 };
 
-typedef struct
+struct vec3
 {
 	f32 x, y, z;
-} vec3;
+};
 
-typedef struct
+struct vec4
 {
 	f32 x, y, z, w;
-} vec4;
+};
 
-Arena* arena_alloc(size_t size);
-void arena_push_alignment(Arena* arena, uintptr_t alignment);
+Arena* arena_alloc(usize size);
+void arena_push_alignment(Arena* arena, uptr alignment);
 
-void* arena_push_size(Arena* arena, size_t size);
-void* arena_push_copy(Arena* arena, void* memory_to_copy, size_t size);
-void* arena_push_copy_zt(Arena* arena, void* memory, size_t size);
+void* arena_push_size(Arena* arena, usize size);
+void* arena_push_copy(Arena* arena, void* memory_to_copy, usize size);
+void* arena_push_copy_zt(Arena* arena, void* memory, usize size);
 
 #define arena_push_array(arena, type, count) arena_push_size(arena, sizeof(type) * (count))
 #define arena_push_struct(arena, type) arena_push_size(arena, sizeof(type))
 
-Arena* arena_suballoc(Arena* arena, size_t size);
+Arena* arena_suballoc(Arena* arena, usize size);
 void arena_reset(Arena* arena);
 
 struct Arena_Snapshot
 {
 	Arena* arena;
-	uintptr_t cursor;
-	uintptr_t alignment;
+	uptr cursor;
+	uptr alignment;
 };
 
 Arena_Snapshot arena_take_snapshot(Arena* arena);
 void arena_apply_snapshot(Arena_Snapshot snapshot);
 
-size_t base64_calc_decoded_len(uint8_t* data, size_t data_size);
-size_t base64_decode(uint8_t* data, size_t data_size, uint8_t* buffer);
+usize base64_calc_decoded_len(u8* data, usize data_size);
+usize base64_decode(u8* data, usize data_size, u8* buffer);
 
 struct RC4
 {
-	uint8_t keystream[256];
-	uint32_t index_0;
-	uint32_t index_1;
+	u8 keystream[256];
+	u32 index_0;
+	u32 index_1;
 };
 
-void rc4_init(RC4* state, uint8_t* key, size_t key_size);
-void rc4_transform(RC4* state, uint8_t* data, size_t data_size);
+void rc4_init(RC4* state, u8* key, usize key_size);
+void rc4_transform(RC4* state, char* data, usize data_size);
 
-Buffer buffer_from_array(size_t size, uint8_t* data);
-uint32_t mem_match(void* data_1, void* data_2, size_t size);
+Buffer buffer_from_array(usize size, const char* data);
+u32 mem_match(void* data_1, void* data_2, usize size);
 
 #define BUNDLE_STRING(s) buffer_from_array(sizeof(s) - 1, s)
-#define STRING(s) { .size = sizeof(s) - 1, .data = (uint8_t *)s }
+#define BUFFER_STRING(s) {.size = sizeof(s) - 1, .data = const_cast<char*>(s)}
 
 #endif // !MISC_HPP

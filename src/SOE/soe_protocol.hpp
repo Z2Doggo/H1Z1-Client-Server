@@ -9,7 +9,7 @@
 #define CORE_DATA_FRAGMENT_EXTRA_SIZE 4
 #define MAX_CORE_DATA_FRAGMENT_SIZE (MAX_PACKET_SIZE - CORE_PACKET_ID_SIZE - CORE_DATA_SEQUENCE_SIZE)
 
-enum class SOE_Protocol : uint16_t // just to be sure
+enum class SOE_Protocol : u16 // just to be sure
 {
     Invalid,
     SessionRequest,
@@ -30,7 +30,7 @@ enum class SOE_Protocol : uint16_t // just to be sure
     End,
 };
 
-static std::array<uint16_t, static_cast<uint16_t>(SOE_Protocol::End) + 1>soe_protocol_ids
+static std::array<u16, static_cast<u16>(SOE_Protocol::End) + 1>soe_protocol_ids
 { 
     0xffff,
     0x0001, 
@@ -51,7 +51,7 @@ static std::array<uint16_t, static_cast<uint16_t>(SOE_Protocol::End) + 1>soe_pro
     0xffff
 };
 
-static std::array<std::string_view, static_cast<uint16_t>(SOE_Protocol::End) + 1>soe_protocol_names
+static std::array<std::string_view, static_cast<u16>(SOE_Protocol::End) + 1>soe_protocol_names
 {
     "INVALID", 
     "SessionRequest", 
@@ -73,32 +73,32 @@ static std::array<std::string_view, static_cast<uint16_t>(SOE_Protocol::End) + 1
 
 struct SOE_SessionRequest
 {
-    uint32_t crc_length;
-    uint32_t session_id;
-    uint32_t udp_length;
+    u32 crc_length;
+    u32 session_id;
+    u32 udp_length;
     char protocol_name[32];
 };
 
 struct SOE_SessionReply
 {
-    uint32_t session_id;
-    uint32_t crc_seed;
-    uint8_t crc_size;
-    uint16_t compression;
-    uint32_t udp_size;
+    u32 session_id;
+    u32 crc_seed;
+    u8 crc_size;
+    u16 compression;
+    u32 udp_size;
 };
 
 struct SOE_Data
 {
-    uint16_t sequence;
-    uint8_t* data;
-    uint32_t data_size;
-    uint16_t crc;
+    u16 sequence;
+    char* data;
+    u32 data_size;
+    u16 crc;
 };
 
 struct SOE_Ack
 {
-    uint16_t sequence;
+    u16 sequence;
 };
 
 class SOE : public Application
@@ -113,19 +113,19 @@ public:
     // Game tick related
     Application* app;
     Session* session;
-    uint32_t handle_id;
+    u32 handle_id;
     Stream* stream;
     Buffer buffer;
     Protocol_Params params;
 
-    void soe_packet_callback(Buffer buffer, uint32_t handle_id, Application* app, SOE* soe_protocol);
-    void soe_session_callback(uint32_t handle_id, Application* app);
-    uint32_t soe_read_data_chunk_size(Stream* stream);
-    void soe_input_process_data_chunks(Buffer buffer, Protocol_Params params, uint32_t handle_id, Application* app, SOE* soe_protocol);
-    void soe_unpack(Stream* stream, void* ptr, SOE_Protocol soe_protocol, uint32_t is_sub, Protocol_Params params);
-    void soe_packet_send(void* ptr, SOE_Protocol soe_protocol, uint32_t handle_id, Application* app);
-    void soe_data_send(Buffer buffer, uint32_t ignore_encryption, uint32_t handle_id, Application* app);
-    void soe_packet_route(Buffer buffer, uint32_t is_sub, uint32_t handle_id, Application* app, SOE* soe_protocol);
+    void soe_packet_callback(Buffer buffer, u32 handle_id, Application* app, SOE* soe_protocol);
+    void soe_session_callback(u32 handle_id, Application* app);
+    u32 soe_read_data_chunk_size(Stream* stream);
+    void soe_input_process_data_chunks(Buffer buffer, Protocol_Params params, u32 handle_id, Application* app, SOE* soe_protocol);
+    void soe_unpack(Stream* stream, void* ptr, SOE_Protocol soe_protocol, u32 is_sub, Protocol_Params params);
+    void soe_packet_send(void* ptr, SOE_Protocol soe_protocol, u32 handle_id, Application* app);
+    void soe_data_send(Buffer buffer, u32 ignore_encryption, u32 handle_id, Application* app);
+    void soe_packet_route(Buffer buffer, u32 is_sub, u32 handle_id, Application* app, SOE* soe_protocol);
 };
 
 class Memory : public SOE

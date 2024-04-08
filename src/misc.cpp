@@ -1,29 +1,29 @@
 #include "misc.hpp"
 
-Arena* arena_alloc(size_t size)
+Arena* arena_alloc(usize size)
 {
 	Arena* result = (Arena*)VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
 
-	result->memory = (uint8_t*)((uintptr_t)result + sizeof(*result));
+	result->memory = (u8*)((uptr)result + sizeof(*result));
 	result->size = size - sizeof(*result);
 	result->cursor = 0;
-	result->alignment = sizeof(uintptr_t);
+	result->alignment = sizeof(uptr);
 
 	memset(result->memory, '_', result->size);
 	return result;
 }
 
-void arena_push_alignment(Arena* arena, uintptr_t alignment)
+void arena_push_alignment(Arena* arena, uptr alignment)
 {
-	uintptr_t aligned_ptr = ALIGN_POW2(static_cast<uintptr_t>(arena->size), alignment);
-	uintptr_t total_size = aligned_ptr - reinterpret_cast<uintptr_t>(arena->memory);
+	uptr aligned_ptr = ALIGN_POW2(static_cast<uptr>(arena->size), alignment);
+	uptr total_size = aligned_ptr - reinterpret_cast<uptr>(arena->memory);
 	arena->cursor = total_size;
 }
 
-void* arena_push_size(Arena* arena, size_t size)
+void* arena_push_size(Arena* arena, usize size)
 {
-	uintptr_t aligned_ptr = ALIGN_POW2((uintptr_t)arena->memory + arena->cursor, arena->alignment);
-	uintptr_t total_size = (aligned_ptr + size) - (uintptr_t)arena->memory;
+	uptr aligned_ptr = ALIGN_POW2((uptr)arena->memory + arena->cursor, arena->alignment);
+	uptr total_size = (aligned_ptr + size) - (uptr)arena->memory;
 
 	memset((void*)aligned_ptr, 0, size);
 	arena->cursor = total_size;
@@ -31,7 +31,7 @@ void* arena_push_size(Arena* arena, size_t size)
 	return reinterpret_cast<void*>(aligned_ptr);
 }
 
-void* arena_push_copy(Arena* arena, void* memory_to_copy, size_t size)
+void* arena_push_copy(Arena* arena, void* memory_to_copy, usize size)
 {
 	void* result = arena_push_size(arena, size + 1);
 	memcpy(&result, memory_to_copy, size);
@@ -39,7 +39,7 @@ void* arena_push_copy(Arena* arena, void* memory_to_copy, size_t size)
 	return result;
 }
 
-void* arena_push_copy_zt(Arena* arena, void* memory, size_t size)
+void* arena_push_copy_zt(Arena* arena, void* memory, usize size)
 {
 	void* result = arena_push_size(arena, size + 1);
 	memcpy(result, memory, size);
@@ -47,14 +47,14 @@ void* arena_push_copy_zt(Arena* arena, void* memory, size_t size)
 	return result;
 }
 
-Arena* arena_suballoc(Arena* arena, size_t size)
+Arena* arena_suballoc(Arena* arena, usize size)
 {
 	Arena* result = static_cast<Arena*>(arena_push_size(arena, size));
 
-	result->memory = (uint8_t*)((uintptr_t)result + sizeof(*result));
+	result->memory = (u8*)((uptr)result + sizeof(*result));
 	result->size = size - sizeof(*result);
 	result->cursor = 0;
-	result->alignment = sizeof(uintptr_t);
+	result->alignment = sizeof(uptr);
 
 	return result;
 }
@@ -81,9 +81,9 @@ void arena_apply_snapshot(Arena_Snapshot snapshot)
 	snapshot.arena->alignment = snapshot.alignment;
 }
 
-size_t base64_calc_decoded_len(uint8_t* data, size_t data_size)
+usize base64_calc_decoded_len(u8* data, usize data_size)
 {
-	size_t result = (data_size / 4) * 3;
+	usize result = (data_size / 4) * 3;
 	if (data[data_size - 1])
 	{
 		result--;
@@ -96,9 +96,9 @@ size_t base64_calc_decoded_len(uint8_t* data, size_t data_size)
 	return result;
 }
 
-size_t base64_decode(uint8_t* data, size_t data_size, uint8_t* buffer)
+usize base64_decode(u8* data, usize data_size, u8* buffer)
 {
-	uint8_t decoding_table[128]{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	u8 decoding_table[128]{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 								0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 								0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 								0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -115,7 +115,7 @@ size_t base64_decode(uint8_t* data, size_t data_size, uint8_t* buffer)
 								0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30,
 								0x31, 0x32, 0x33, 0xff, 0xff, 0xff, 0xff, 0xff };
 
-	size_t i, j;
+	usize i, j;
 	for (i = j = 0; i < data_size; i += 4, j += 3)
 	{
 		buffer[j] = (decoding_table[data[i]] << 2) | (decoding_table[data[i + 1]] >> 4);
@@ -126,9 +126,9 @@ size_t base64_decode(uint8_t* data, size_t data_size, uint8_t* buffer)
 	return base64_calc_decoded_len(data, data_size);
 }
 
-void rc4_init(RC4* state, uint8_t* key, size_t key_size)
+void rc4_init(RC4* state, u8* key, usize key_size)
 {
-	uint8_t keystream_initial[256]{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+	u8 keystream_initial[256]{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 								   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 								   0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
 								   0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
@@ -162,8 +162,8 @@ void rc4_init(RC4* state, uint8_t* key, size_t key_size)
 								   0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff };
 
 	memcpy(state->keystream, keystream_initial, 256);
-	uint8_t swap;
-	size_t i, j;
+	u8 swap;
+	usize i, j;
 
 	for (i = j = 0; i < 256; i++)
 	{
@@ -175,9 +175,9 @@ void rc4_init(RC4* state, uint8_t* key, size_t key_size)
 	}
 }
 
-void rc4_transform(RC4* state, uint8_t* data, size_t data_size)
+void rc4_transform(RC4* state, char* data, usize data_size)
 {
-	uint8_t swap;
+	u8 swap;
 
 	for (uint32_t k = 0; k < data_size; k++)
 	{
@@ -192,19 +192,19 @@ void rc4_transform(RC4* state, uint8_t* data, size_t data_size)
 	}
 }
 
-Buffer buffer_from_array(size_t size, uint8_t* data)
+Buffer buffer_from_array(usize size, const char* data)
 {
 	Buffer result{};
 	result.size = size;
-	result.data = static_cast<uint8_t*>(data);
+	result.data = const_cast<char*>(data);
 	return result;
 }
 
-uint32_t mem_match(void* data_1, void* data_2, size_t size)
+uint32_t mem_match(void* data_1, void* data_2, usize size)
 {
-	for (size_t i = 0; i < size; i++)
+	for (usize i = 0; i < size; i++)
 	{
-		if (*((uint8_t*)data_1 + i) != *((uint8_t*)data_2 + i))
+		if (*((u8*)data_1 + i) != *((u8*)data_2 + i))
 		{
 			return 0;
 		}
